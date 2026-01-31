@@ -1,5 +1,40 @@
 # Ukraine War Data Dashboard - Development Changelog
 
+## 2026-01-31 - Unified Conflict Events Tab with Category Breakdowns
+
+### Added
+- **Unified Conflict Events Tab** - Restructured all conflict datasets into subtabs:
+  - ACLED - Event type filters (6 types: Battles, Explosions/Remote violence, Protests, Riots, Strategic developments, Violence against civilians)
+  - UCDP - Violence type filters (3 types: State-based, Non-state, One-sided)
+  - VIINA - News source filters (16 sources) with ML-classified event types
+  - Bellingcat - Impact type filters (13 types: Residential, Commercial, Healthcare, Military, etc.)
+  - Comparison - Cross-dataset comparison view
+
+- **Sidebar filters** for all conflict subtabs with All/None toggle buttons
+- **Stacked bar charts** showing category breakdowns over time for each dataset
+- **Pie charts** for category distributions
+- **Horizontal bar charts** for top categories
+- **URL hash deep linking** - Navigate directly via #conflict-acled, #conflict-ucdp, etc.
+- **Source link highlighting** - Clicking source links navigates to Sources tab and highlights the card
+
+- **New data exports** for category breakdowns:
+  - `ucdp_by_violence_type.json` - UCDP totals by violence type
+  - `ucdp_monthly_by_type.json` - Monthly UCDP by violence type
+  - `bellingcat_by_impact.json` - Bellingcat totals by impact category
+  - `bellingcat_monthly_by_impact.json` - Monthly Bellingcat by impact
+  - `viina_by_event_type.json` - VIINA totals by ML event type
+  - `viina_monthly_by_event_type.json` - Monthly VIINA by event type
+
+### Fixed
+- **MDAA external URL** - Fixed 404 error on MDAA Tracker source link
+
+### Technical
+- New components: `UnifiedConflictEventsTab.tsx`, `SubtabNavigation.tsx`, `ACLEDSubtab.tsx`, `UCDPSubtab.tsx`, `VIINASubtab.tsx`, `BellingcatSubtab.tsx`, `ComparisonSubtab.tsx`
+- New types: `UCDPByViolenceType`, `UCDPMonthlyByType`, `BellingcatByImpact`, `BellingcatMonthlyByImpact`, `ViinaByEventType`, `ViinaMonthlyByEventType`
+- Updated `export_all_dashboard_data.py` with category breakdown exports
+
+---
+
 ## Repository Information
 
 **Local Repository Path:** `/tmp/dashboard-build`
