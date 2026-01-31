@@ -14,6 +14,8 @@ import MetricDecomposition from './components/charts/MetricDecomposition';
 import SourcesTab from './components/SourcesTab';
 import OverviewTab from './components/OverviewTab';
 import ConflictEventsTab from './components/ConflictEventsTab';
+import ViinaTab from './components/ViinaTab';
+import BellingcatTab from './components/BellingcatTab';
 import AerialAssaultsTab from './components/AerialAssaultsTab';
 import EquipmentTab from './components/EquipmentTab';
 import HumanitarianTab from './components/HumanitarianTab';
@@ -113,7 +115,7 @@ function DashboardContent() {
   // URL hash sync
   useEffect(() => {
     const hash = window.location.hash.substring(1);
-    const validTabs = ['overview', 'conflict', 'aerial', 'equipment', 'humanitarian', 'territory', 'events', 'map', 'sources'];
+    const validTabs = ['overview', 'conflict', 'viina', 'bellingcat', 'aerial', 'equipment', 'humanitarian', 'territory', 'events', 'map', 'sources'];
     if (validTabs.includes(hash)) {
       dispatch({ type: 'SET_TAB', payload: hash as any });
     }
@@ -158,6 +160,18 @@ function DashboardContent() {
       {state.activeTab === 'conflict' && (
         <ChartErrorBoundary name="Conflict Events">
           <ConflictEventsTab />
+        </ChartErrorBoundary>
+      )}
+
+      {state.activeTab === 'viina' && (
+        <ChartErrorBoundary name="VIINA Events">
+          <ViinaTab />
+        </ChartErrorBoundary>
+      )}
+
+      {state.activeTab === 'bellingcat' && (
+        <ChartErrorBoundary name="Bellingcat">
+          <BellingcatTab />
         </ChartErrorBoundary>
       )}
 

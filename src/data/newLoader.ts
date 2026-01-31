@@ -12,6 +12,14 @@ import type {
   CasualtyData,
   RefugeeByCountry,
   RefugeeTotals,
+  ViinaDaily,
+  ViinaMonthly,
+  ViinaBySource,
+  ViinaByOblast,
+  ViinaMonthlyBySource,
+  BellingcatDaily,
+  BellingcatMonthly,
+  BellingcatIncident,
 } from '../types';
 
 const BASE_PATH = import.meta.env.BASE_URL || '/';
@@ -38,3 +46,15 @@ export const loadPersonnelDaily = () => fetchJson<PersonnelDaily[]>('personnel_d
 export const loadCasualties = () => fetchJson<CasualtyData[]>('casualties_ohchr.json');
 export const loadRefugeesByCountry = () => fetchJson<RefugeeByCountry[]>('refugees_by_country.json');
 export const loadRefugeeTotals = () => fetchJson<RefugeeTotals[]>('refugee_totals.json');
+
+// VIINA loaders
+export const loadViinaDaily = () => fetchJson<ViinaDaily[]>('viina_daily.json');
+export const loadViinaMonthly = () => fetchJson<ViinaMonthly[]>('viina_monthly.json');
+export const loadViinaBySource = () => fetchJson<ViinaBySource[]>('viina_by_source.json');
+export const loadViinaByOblast = () => fetchJson<ViinaByOblast[]>('viina_by_oblast.json');
+export const loadViinaMonthlyBySource = () => fetchJson<ViinaMonthlyBySource[]>('viina_monthly_by_source.json');
+
+// Bellingcat loaders
+export const loadBellingcatDaily = () => fetchJson<BellingcatDaily[]>('bellingcat_daily.json');
+export const loadBellingcatMonthly = () => fetchJson<BellingcatMonthly[]>('bellingcat_monthly.json');
+export const loadBellingcatIncidents = () => fetchJson<BellingcatIncident[]>('bellingcat_incidents.json');

@@ -1299,3 +1299,71 @@ html, body, #root {
   margin-top: 16px;
   font-size: 13px;
 }
+
+/* Bellingcat incidents table */
+.incidents-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.incidents-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.incidents-table th,
+.incidents-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.incidents-table th {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.incidents-table tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.incidents-table .date-cell {
+  white-space: nowrap;
+  color: var(--text-secondary);
+  width: 100px;
+}
+
+.incidents-table .location-cell {
+  width: 150px;
+  color: var(--color-accent);
+}
+
+.incidents-table .desc-cell {
+  color: var(--text-primary);
+}
+
+/* VIINA tab styles */
+.viina-tab,
+.bellingcat-tab {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.viina-tab h2,
+.bellingcat-tab h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.viina-tab .tab-subtitle,
+.bellingcat-tab .tab-subtitle {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 20px;
+}

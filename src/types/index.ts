@@ -52,7 +52,7 @@ export interface DashboardMetadata {
   exportTimestamp: string;
 }
 
-export type TabId = 'overview' | 'conflict' | 'aerial' | 'equipment' | 'humanitarian' | 'territory' | 'events' | 'map' | 'sources';
+export type TabId = 'overview' | 'conflict' | 'viina' | 'bellingcat' | 'aerial' | 'equipment' | 'humanitarian' | 'territory' | 'events' | 'map' | 'sources';
 
 // New data types for additional visualizations
 export interface OverviewStats {
@@ -218,3 +218,50 @@ export type DashboardAction =
   | { type: 'SET_HIGHLIGHTED_EVENT'; payload: string | null }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null };
+
+// VIINA data types
+export interface ViinaDaily {
+  date: string;
+  events: number;
+}
+
+export interface ViinaMonthly {
+  month: string;
+  events: number;
+}
+
+export interface ViinaBySource {
+  source: string;
+  events: number;
+}
+
+export interface ViinaByOblast {
+  oblast: string;
+  events: number;
+}
+
+export interface ViinaMonthlyBySource {
+  month: string;
+  source: string;
+  events: number;
+}
+
+// Bellingcat data types
+export interface BellingcatDaily {
+  date: string;
+  incidents: number;
+}
+
+export interface BellingcatMonthly {
+  month: string;
+  incidents: number;
+}
+
+export interface BellingcatIncident {
+  date: string;
+  location: string | null;
+  description: string;
+  sources: string[];
+  latitude: number;
+  longitude: number;
+}
