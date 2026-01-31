@@ -374,3 +374,41 @@ export interface HapiFunding {
   funding_usd: number;
   funding_pct: number;
 }
+
+// Category breakdown types
+export interface UCDPByViolenceType {
+  type_of_violence: number;
+  violence_type_label: string;
+  events: number;
+  fatalities: number;
+}
+
+export interface UCDPMonthlyByType {
+  month: string;
+  type_of_violence: number;
+  violence_type_label: string;
+  events: number;
+  fatalities: number;
+}
+
+export interface BellingcatByImpact {
+  impact_type: string;
+  incidents: number;
+}
+
+export interface BellingcatMonthlyByImpact {
+  month: string;
+  impact_type: string;
+  incidents: number;
+}
+
+export interface ViinaByEventType {
+  event_type: string;
+  events: number;
+}
+
+export interface ViinaMonthlyByEventType {
+  month: string;
+  event_type: string;
+  events: number;
+}

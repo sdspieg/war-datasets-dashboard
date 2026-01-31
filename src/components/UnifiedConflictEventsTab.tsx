@@ -39,6 +39,18 @@ const SOURCE_LABELS: Record<string, string> = {
   'kp': 'KP (RU)',
 };
 
+// UCDP violence types
+const UCDP_VIOLENCE_TYPES = ['State-based', 'Non-state', 'One-sided'] as const;
+type UCDPViolenceType = typeof UCDP_VIOLENCE_TYPES[number];
+
+// Bellingcat impact types (from data)
+const BELLINGCAT_IMPACT_TYPES = [
+  'Residential', 'Commercial', 'School or childcare', 'Roads/Highways/Transport',
+  'Industrial', 'Healthcare', 'Administrative', 'Cultural', 'Undefined',
+  'Religious', 'Food/Food Infrastructure', 'Humanitarian', 'Military'
+] as const;
+type BellingcatImpactType = typeof BELLINGCAT_IMPACT_TYPES[number];
+
 export default function UnifiedConflictEventsTab() {
   const [activeSubtab, setActiveSubtab] = useState<ConflictSubtab>('acled');
 
@@ -50,6 +62,16 @@ export default function UnifiedConflictEventsTab() {
   // VIINA filters (by source)
   const [viinaSelectedSources, setViinaSelectedSources] = useState<Set<ViinaSource>>(
     new Set(VIINA_SOURCES)
+  );
+
+  // UCDP filters (by violence type)
+  const [ucdpSelectedTypes, setUcdpSelectedTypes] = useState<Set<string>>(
+    new Set(UCDP_VIOLENCE_TYPES)
+  );
+
+  // Bellingcat filters (by impact type)
+  const [bellingcatSelectedImpacts, setBellingcatSelectedImpacts] = useState<Set<string>>(
+    new Set(BELLINGCAT_IMPACT_TYPES)
   );
 
   // Handle URL hash for deep linking
@@ -101,6 +123,30 @@ export default function UnifiedConflictEventsTab() {
   };
   const handleViinaSelectAll = () => setViinaSelectedSources(new Set(VIINA_SOURCES));
   const handleViinaClearAll = () => setViinaSelectedSources(new Set());
+
+  // UCDP filter handlers
+  const handleUcdpToggle = (type: string) => {
+    setUcdpSelectedTypes(prev => {
+      const next = new Set(prev);
+      if (next.has(type)) next.delete(type);
+      else next.add(type);
+      return next;
+    });
+  };
+  const handleUcdpSelectAll = () => setUcdpSelectedTypes(new Set(UCDP_VIOLENCE_TYPES));
+  const handleUcdpClearAll = () => setUcdpSelectedTypes(new Set());
+
+  // Bellingcat filter handlers
+  const handleBellingcatToggle = (impact: string) => {
+    setBellingcatSelectedImpacts(prev => {
+      const next = new Set(prev);
+      if (next.has(impact)) next.delete(impact);
+      else next.add(impact);
+      return next;
+    });
+  };
+  const handleBellingcatSelectAll = () => setBellingcatSelectedImpacts(new Set(BELLINGCAT_IMPACT_TYPES));
+  const handleBellingcatClearAll = () => setBellingcatSelectedImpacts(new Set());
 
   // Render sidebar based on active subtab
   const renderSidebar = () => {
@@ -160,11 +206,55 @@ export default function UnifiedConflictEventsTab() {
         );
 
       case 'ucdp':
+        return (
+          <div className="conflict-sidebar">
+            <div className="sidebar-section">
+              <div className="sidebar-header">
+                <h3>Violence Types</h3>
+                <div className="sidebar-actions">
+                  <button onClick={handleUcdpSelectAll} disabled={ucdpSelectedTypes.size === UCDP_VIOLENCE_TYPES.length}>All</button>
+                  <button onClick={handleUcdpClearAll} disabled={ucdpSelectedTypes.size === 0}>None</button>
+                </div>
+              </div>
+              <div className="filter-list">
+                {UCDP_VIOLENCE_TYPES.map(type => (
+                  <label key={type} className="filter-item">
+                    <input
+                      type="checkbox"
+                      checked={ucdpSelectedTypes.has(type)}
+                      onChange={() => handleUcdpToggle(type)}
+                    />
+                    <span className="filter-label">{type}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
       case 'bellingcat':
         return (
           <div className="conflict-sidebar">
             <div className="sidebar-section">
-              <p className="no-filters-msg">No filters available for this dataset.</p>
+              <div className="sidebar-header">
+                <h3>Impact Types</h3>
+                <div className="sidebar-actions">
+                  <button onClick={handleBellingcatSelectAll} disabled={bellingcatSelectedImpacts.size === BELLINGCAT_IMPACT_TYPES.length}>All</button>
+                  <button onClick={handleBellingcatClearAll} disabled={bellingcatSelectedImpacts.size === 0}>None</button>
+                </div>
+              </div>
+              <div className="filter-list scrollable">
+                {BELLINGCAT_IMPACT_TYPES.map(impact => (
+                  <label key={impact} className="filter-item">
+                    <input
+                      type="checkbox"
+                      checked={bellingcatSelectedImpacts.has(impact)}
+                      onChange={() => handleBellingcatToggle(impact)}
+                    />
+                    <span className="filter-label">{impact}</span>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
         );
@@ -191,11 +281,15 @@ export default function UnifiedConflictEventsTab() {
           {activeSubtab === 'acled' && (
             <ACLEDSubtab selectedTypes={acledSelectedTypes} />
           )}
-          {activeSubtab === 'ucdp' && <UCDPSubtab />}
+          {activeSubtab === 'ucdp' && (
+            <UCDPSubtab selectedTypes={ucdpSelectedTypes} />
+          )}
           {activeSubtab === 'viina' && (
             <VIINASubtab selectedSources={viinaSelectedSources} />
           )}
-          {activeSubtab === 'bellingcat' && <BellingcatSubtab />}
+          {activeSubtab === 'bellingcat' && (
+            <BellingcatSubtab selectedImpacts={bellingcatSelectedImpacts} />
+          )}
           {activeSubtab === 'comparison' && <ComparisonSubtab />}
         </div>
       </div>

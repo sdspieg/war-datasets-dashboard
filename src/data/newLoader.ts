@@ -81,3 +81,20 @@ export const loadHapiIdps = () => fetchJson<HapiIdps[]>('hapi_idps.json');
 export const loadHapiIdpsTotal = () => fetchJson<HapiIdpsTotal[]>('hapi_idps_total.json');
 export const loadHapiHumanitarianNeeds = () => fetchJson<HapiHumanitarianNeeds[]>('hapi_humanitarian_needs.json');
 export const loadHapiFunding = () => fetchJson<HapiFunding[]>('hapi_funding.json');
+
+// Category breakdown loaders
+import type {
+  UCDPByViolenceType,
+  UCDPMonthlyByType,
+  BellingcatByImpact,
+  BellingcatMonthlyByImpact,
+  ViinaByEventType,
+  ViinaMonthlyByEventType,
+} from '../types';
+
+export const loadUCDPByViolenceType = () => fetchJson<UCDPByViolenceType[]>('ucdp_by_violence_type.json');
+export const loadUCDPMonthlyByType = () => fetchJson<UCDPMonthlyByType[]>('ucdp_monthly_by_type.json');
+export const loadBellingcatByImpact = () => fetchJson<BellingcatByImpact[]>('bellingcat_by_impact.json');
+export const loadBellingcatMonthlyByImpact = () => fetchJson<BellingcatMonthlyByImpact[]>('bellingcat_monthly_by_impact.json');
+export const loadViinaByEventType = () => fetchJson<ViinaByEventType[]>('viina_by_event_type.json');
+export const loadViinaMonthlyByEventType = () => fetchJson<ViinaMonthlyByEventType[]>('viina_monthly_by_event_type.json');

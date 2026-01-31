@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Plot from 'react-plotly.js';
-import { loadDailyEvents } from '../../data/newLoader';
-import type { DailyEvent } from '../../types';
+import { loadDailyEvents, loadUCDPByViolenceType, loadUCDPMonthlyByType } from '../../data/newLoader';
+import type { DailyEvent, UCDPByViolenceType, UCDPMonthlyByType } from '../../types';
 
 const SourceLink = ({ source, sourceId }: { source: string; sourceId?: string }) => {
   const id = sourceId || source.toLowerCase();
@@ -10,6 +10,12 @@ const SourceLink = ({ source, sourceId }: { source: string; sourceId?: string })
       ({source})
     </a>
   );
+};
+
+const VIOLENCE_TYPE_COLORS: Record<string, string> = {
+  'State-based': '#ef4444',
+  'Non-state': '#f97316',
+  'One-sided': '#eab308',
 };
 
 const darkLayout = {
@@ -43,32 +49,27 @@ const darkLayout = {
 
 const plotConfig = { displayModeBar: true, displaylogo: false, responsive: true };
 
-// Calculate Pearson correlation
-function pearsonCorrelation(x: number[], y: number[]): number {
-  const n = Math.min(x.length, y.length);
-  if (n === 0) return 0;
-
-  const sumX = x.slice(0, n).reduce((a, b) => a + b, 0);
-  const sumY = y.slice(0, n).reduce((a, b) => a + b, 0);
-  const sumXY = x.slice(0, n).reduce((acc, xi, i) => acc + xi * y[i], 0);
-  const sumX2 = x.slice(0, n).reduce((acc, xi) => acc + xi * xi, 0);
-  const sumY2 = y.slice(0, n).reduce((acc, yi) => acc + yi * yi, 0);
-
-  const numerator = n * sumXY - sumX * sumY;
-  const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
-
-  return denominator === 0 ? 0 : numerator / denominator;
+interface UCDPSubtabProps {
+  selectedTypes: Set<string>;
 }
 
-export default function UCDPSubtab() {
+export default function UCDPSubtab({ selectedTypes }: UCDPSubtabProps) {
   const [dailyEvents, setDailyEvents] = useState<DailyEvent[]>([]);
+  const [byViolenceType, setByViolenceType] = useState<UCDPByViolenceType[]>([]);
+  const [monthlyByType, setMonthlyByType] = useState<UCDPMonthlyByType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadDailyEvents()
-      .then((daily) => {
+    Promise.all([
+      loadDailyEvents(),
+      loadUCDPByViolenceType(),
+      loadUCDPMonthlyByType(),
+    ])
+      .then(([daily, byType, monthlyType]) => {
         setDailyEvents(daily);
+        setByViolenceType(byType);
+        setMonthlyByType(monthlyType);
         setLoading(false);
       })
       .catch((err) => {
@@ -76,6 +77,18 @@ export default function UCDPSubtab() {
         setLoading(false);
       });
   }, []);
+
+  // Filter monthly data based on selected types
+  const filteredMonthlyByType = useMemo(() =>
+    monthlyByType.filter(m => selectedTypes.has(m.violence_type_label)),
+    [monthlyByType, selectedTypes]
+  );
+
+  // Filter totals based on selected types
+  const filteredByViolenceType = useMemo(() =>
+    byViolenceType.filter(t => selectedTypes.has(t.violence_type_label)),
+    [byViolenceType, selectedTypes]
+  );
 
   if (loading) {
     return (
@@ -97,46 +110,31 @@ export default function UCDPSubtab() {
 
   const recentEvents = dailyEvents.slice(-365);
 
-  // 7-day rolling change rate for UCDP
-  const rateData = recentEvents.slice(7).map((d, i) => {
-    const current = d.ucdp_events;
-    const prev = recentEvents[i].ucdp_events;
-    const rate = prev > 0 ? ((current - prev) / prev) * 100 : 0;
-    return { date: d.date, events: current, rate };
-  });
+  // Aggregate monthly data for stacked bars
+  const monthlyAggregated = filteredMonthlyByType.reduce((acc, m) => {
+    const key = m.month;
+    if (!acc[key]) acc[key] = { month: key } as Record<string, string | number>;
+    acc[key][m.violence_type_label] = ((acc[key][m.violence_type_label] as number) || 0) + m.events;
+    return acc;
+  }, {} as Record<string, Record<string, number | string>>);
 
-  // Fatalities timeline
-  const fatalitiesRateData = recentEvents.slice(7).map((d, i) => {
-    const current = d.ucdp_fatalities;
-    const prev = recentEvents[i].ucdp_fatalities;
-    const rate = prev > 0 ? ((current - prev) / prev) * 100 : 0;
-    return { date: d.date, fatalities: current, rate };
-  });
-
-  // Correlation between events and fatalities
-  const eventsFatalitiesCorr = pearsonCorrelation(
-    recentEvents.map(d => d.ucdp_events),
-    recentEvents.map(d => d.ucdp_fatalities)
+  const monthlyChartData = Object.values(monthlyAggregated).sort((a, b) =>
+    String(a.month).localeCompare(String(b.month))
   );
 
-  // Monthly aggregations
-  const monthlyData = recentEvents.reduce((acc, d) => {
-    const month = d.date.substring(0, 7);
-    if (!acc[month]) acc[month] = { events: 0, fatalities: 0 };
-    acc[month].events += d.ucdp_events;
-    acc[month].fatalities += d.ucdp_fatalities;
-    return acc;
-  }, {} as Record<string, { events: number; fatalities: number }>);
+  const visibleTypes = [...selectedTypes];
+  const months = monthlyChartData.map(d => d.month as string);
 
-  const monthlyChartData = Object.entries(monthlyData)
-    .map(([month, data]) => ({ month, ...data }))
-    .sort((a, b) => a.month.localeCompare(b.month));
+  // Stats from filtered data
+  const totalEvents = filteredByViolenceType.reduce((s, t) => s + t.events, 0);
+  const totalFatalities = filteredByViolenceType.reduce((s, t) => s + t.fatalities, 0);
 
-  // Stats
-  const totalEvents = recentEvents.reduce((s, d) => s + d.ucdp_events, 0);
-  const totalFatalities = recentEvents.reduce((s, d) => s + d.ucdp_fatalities, 0);
-  const avgEventsPerDay = totalEvents / recentEvents.length;
-  const avgFatalitiesPerDay = totalFatalities / recentEvents.length;
+  // Pie data for violence types
+  const pieData = filteredByViolenceType.map(t => ({
+    name: t.violence_type_label,
+    value: t.events,
+    fatalities: t.fatalities,
+  }));
 
   return (
     <div className="conflict-subtab">
@@ -149,175 +147,112 @@ export default function UCDPSubtab() {
       <div className="conflict-stats">
         <div className="stat-card">
           <span className="stat-value">{totalEvents.toLocaleString()}</span>
-          <span className="stat-label">Events (365d)</span>
+          <span className="stat-label">Total Events</span>
         </div>
         <div className="stat-card">
           <span className="stat-value">{totalFatalities.toLocaleString()}</span>
-          <span className="stat-label">Fatalities (365d)</span>
+          <span className="stat-label">Total Fatalities</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{avgEventsPerDay.toFixed(1)}</span>
-          <span className="stat-label">Avg Events/Day</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-value">{eventsFatalitiesCorr.toFixed(3)}</span>
-          <span className="stat-label">Event-Fatality r</span>
+          <span className="stat-value">{selectedTypes.size}</span>
+          <span className="stat-label">Types Selected</span>
         </div>
       </div>
 
-      {/* Daily UCDP Events with Rate */}
-      <div className="chart-card">
-        <h3>Daily UCDP Events <SourceLink source="UCDP" /></h3>
-        <p className="chart-note">Top: Daily events | Bottom: 7-day rate of change (%)</p>
-        <Plot
-          data={[
-            {
-              x: rateData.map(d => d.date),
-              y: rateData.map(d => d.events),
-              type: 'scatter' as const,
-              mode: 'lines' as const,
-              name: 'Events',
-              line: { color: '#3b82f6', width: 1.5 },
-              fill: 'tozeroy',
-              fillcolor: 'rgba(59, 130, 246, 0.2)',
-              hoverlabel: { font: { color: '#fff' } },
-            },
-          ]}
-          layout={{
-            ...darkLayout,
-            height: 280,
-            xaxis: {
-              ...darkLayout.xaxis,
-              rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
-            },
-          }}
-          config={plotConfig}
-          style={{ width: '100%' }}
-        />
-        <Plot
-          data={[
-            {
-              x: rateData.map(d => d.date),
-              y: rateData.map(d => d.rate),
-              type: 'scatter' as const,
-              mode: 'lines' as const,
-              name: 'Rate of Change',
-              line: { color: '#06b6d4', width: 1.5 },
-              hoverlabel: { font: { color: '#fff' } },
-            },
-          ]}
-          layout={{
-            ...darkLayout,
-            height: 180,
-            margin: { ...darkLayout.margin, t: 10 },
-            yaxis: { ...darkLayout.yaxis, ticksuffix: '%', zeroline: true, zerolinecolor: '#888' },
-          }}
-          config={plotConfig}
-          style={{ width: '100%' }}
-        />
-      </div>
+      {selectedTypes.size === 0 ? (
+        <div className="chart-card">
+          <p className="no-data-msg">Select at least one violence type from the sidebar to view data.</p>
+        </div>
+      ) : (
+        <>
+          {/* Monthly Events by Violence Type - Stacked Bar (PRIMARY) */}
+          <div className="chart-card">
+            <h3>Monthly Events by Violence Type <SourceLink source="UCDP" /></h3>
+            <p className="chart-note">Stacked bars show violence type breakdown. Drag to zoom. Click legend to toggle.</p>
+            <Plot
+              data={visibleTypes.map((type) => ({
+                x: months,
+                y: monthlyChartData.map(d => (d[type] as number) || 0),
+                type: 'bar' as const,
+                name: type,
+                marker: { color: VIOLENCE_TYPE_COLORS[type] || '#888' },
+                hoverlabel: { font: { color: '#fff' } },
+              }))}
+              layout={{
+                ...darkLayout,
+                barmode: 'stack',
+                height: 400,
+                xaxis: {
+                  ...darkLayout.xaxis,
+                  rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
+                },
+                legend: { ...darkLayout.legend, orientation: 'h' as const, y: 1.1 },
+              }}
+              config={plotConfig}
+              style={{ width: '100%' }}
+            />
+          </div>
 
-      {/* Daily Fatalities */}
-      <div className="chart-card">
-        <h3>Daily UCDP Fatalities <SourceLink source="UCDP" /></h3>
-        <p className="chart-note">Top: Daily fatalities | Bottom: 7-day rate of change (%)</p>
-        <Plot
-          data={[
-            {
-              x: fatalitiesRateData.map(d => d.date),
-              y: fatalitiesRateData.map(d => d.fatalities),
-              type: 'scatter' as const,
-              mode: 'lines' as const,
-              name: 'Fatalities',
-              line: { color: '#ef4444', width: 1.5 },
-              fill: 'tozeroy',
-              fillcolor: 'rgba(239, 68, 68, 0.2)',
-              hoverlabel: { font: { color: '#fff' } },
-            },
-          ]}
-          layout={{
-            ...darkLayout,
-            height: 280,
-            xaxis: {
-              ...darkLayout.xaxis,
-              rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
-            },
-          }}
-          config={plotConfig}
-          style={{ width: '100%' }}
-        />
-        <Plot
-          data={[
-            {
-              x: fatalitiesRateData.map(d => d.date),
-              y: fatalitiesRateData.map(d => d.rate),
-              type: 'scatter' as const,
-              mode: 'lines' as const,
-              name: 'Rate of Change',
-              line: { color: '#f97316', width: 1.5 },
-              hoverlabel: { font: { color: '#fff' } },
-            },
-          ]}
-          layout={{
-            ...darkLayout,
-            height: 180,
-            margin: { ...darkLayout.margin, t: 10 },
-            yaxis: { ...darkLayout.yaxis, ticksuffix: '%', range: [-500, 500], zeroline: true, zerolinecolor: '#888' },
-          }}
-          config={plotConfig}
-          style={{ width: '100%' }}
-        />
-      </div>
+          <div className="chart-grid-2">
+            {/* Pie chart for violence types */}
+            <div className="chart-card">
+              <h3>Events by Violence Type <SourceLink source="UCDP" /></h3>
+              <Plot
+                data={[
+                  {
+                    values: pieData.map(d => d.value),
+                    labels: pieData.map(d => d.name),
+                    type: 'pie' as const,
+                    hole: 0.4,
+                    marker: { colors: pieData.map(d => VIOLENCE_TYPE_COLORS[d.name] || '#888') },
+                    textinfo: 'percent',
+                    textposition: 'inside',
+                    textfont: { color: '#fff', size: 11 },
+                    hovertemplate: '%{label}<br>%{value:,} events<extra></extra>',
+                    hoverlabel: { font: { color: '#fff' } },
+                  },
+                ]}
+                layout={{
+                  ...darkLayout,
+                  height: 300,
+                  margin: { l: 20, r: 20, t: 20, b: 20 },
+                  showlegend: true,
+                  legend: { ...darkLayout.legend, orientation: 'v' as const, x: 1, y: 0.5 },
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                style={{ width: '100%' }}
+              />
+            </div>
 
-      {/* Monthly Events and Fatalities */}
-      <div className="chart-card">
-        <h3>Monthly Events & Fatalities <SourceLink source="UCDP" /></h3>
-        <Plot
-          data={[
-            {
-              x: monthlyChartData.map(d => d.month),
-              y: monthlyChartData.map(d => d.events),
-              type: 'bar' as const,
-              name: 'Events',
-              marker: { color: '#3b82f6' },
-              yaxis: 'y',
-              hoverlabel: { font: { color: '#fff' } },
-            },
-            {
-              x: monthlyChartData.map(d => d.month),
-              y: monthlyChartData.map(d => d.fatalities),
-              type: 'scatter' as const,
-              mode: 'lines+markers' as const,
-              name: 'Fatalities',
-              line: { color: '#ef4444', width: 2 },
-              marker: { color: '#ef4444', size: 6 },
-              yaxis: 'y2',
-              hoverlabel: { font: { color: '#fff' } },
-            },
-          ]}
-          layout={{
-            ...darkLayout,
-            height: 350,
-            xaxis: {
-              ...darkLayout.xaxis,
-              rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
-            },
-            yaxis: {
-              ...darkLayout.yaxis,
-              title: { text: 'Events', font: { size: 11, color: '#3b82f6' } },
-            },
-            yaxis2: {
-              ...darkLayout.yaxis,
-              title: { text: 'Fatalities', font: { size: 11, color: '#ef4444' } },
-              overlaying: 'y' as const,
-              side: 'right' as const,
-            },
-            legend: { ...darkLayout.legend, orientation: 'h' as const, y: 1.1 },
-          }}
-          config={plotConfig}
-          style={{ width: '100%' }}
-        />
-      </div>
+            {/* Fatalities by violence type */}
+            <div className="chart-card">
+              <h3>Fatalities by Violence Type <SourceLink source="UCDP" /></h3>
+              <Plot
+                data={[
+                  {
+                    x: pieData.map(d => d.name),
+                    y: pieData.map(d => d.fatalities),
+                    type: 'bar' as const,
+                    marker: { color: pieData.map(d => VIOLENCE_TYPE_COLORS[d.name] || '#888') },
+                    text: pieData.map(d => d.fatalities.toLocaleString()),
+                    textposition: 'outside' as const,
+                    textfont: { color: '#888', size: 10 },
+                    hovertemplate: '%{x}<br>%{y:,} fatalities<extra></extra>',
+                    hoverlabel: { font: { color: '#fff' } },
+                  },
+                ]}
+                layout={{
+                  ...darkLayout,
+                  height: 300,
+                  margin: { l: 60, r: 20, t: 20, b: 80 },
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

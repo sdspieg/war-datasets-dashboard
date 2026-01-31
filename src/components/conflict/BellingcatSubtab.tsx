@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Plot from 'react-plotly.js';
 import {
   loadBellingcatDaily,
   loadBellingcatMonthly,
   loadBellingcatIncidents,
+  loadBellingcatByImpact,
+  loadBellingcatMonthlyByImpact,
 } from '../../data/newLoader';
 import type {
   BellingcatDaily,
   BellingcatMonthly,
   BellingcatIncident,
+  BellingcatByImpact,
+  BellingcatMonthlyByImpact,
 } from '../../types';
 
 const SourceLink = ({ source, sourceId }: { source: string; sourceId?: string }) => {
@@ -18,6 +22,22 @@ const SourceLink = ({ source, sourceId }: { source: string; sourceId?: string })
       ({source})
     </a>
   );
+};
+
+const IMPACT_COLORS: Record<string, string> = {
+  'Residential': '#ef4444',
+  'Commercial': '#f97316',
+  'School or childcare': '#eab308',
+  'Roads/Highways/Transport': '#22c55e',
+  'Industrial': '#06b6d4',
+  'Healthcare': '#3b82f6',
+  'Administrative': '#8b5cf6',
+  'Cultural': '#ec4899',
+  'Religious': '#14b8a6',
+  'Food/Food Infrastructure': '#84cc16',
+  'Humanitarian': '#a855f7',
+  'Military': '#64748b',
+  'Undefined': '#6b7280',
 };
 
 const darkLayout = {
@@ -51,10 +71,16 @@ const darkLayout = {
 
 const plotConfig = { displayModeBar: true, displaylogo: false, responsive: true };
 
-export default function BellingcatSubtab() {
+interface BellingcatSubtabProps {
+  selectedImpacts: Set<string>;
+}
+
+export default function BellingcatSubtab({ selectedImpacts }: BellingcatSubtabProps) {
   const [daily, setDaily] = useState<BellingcatDaily[]>([]);
   const [monthly, setMonthly] = useState<BellingcatMonthly[]>([]);
   const [incidents, setIncidents] = useState<BellingcatIncident[]>([]);
+  const [byImpact, setByImpact] = useState<BellingcatByImpact[]>([]);
+  const [monthlyByImpact, setMonthlyByImpact] = useState<BellingcatMonthlyByImpact[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,11 +89,15 @@ export default function BellingcatSubtab() {
       loadBellingcatDaily(),
       loadBellingcatMonthly(),
       loadBellingcatIncidents(),
+      loadBellingcatByImpact(),
+      loadBellingcatMonthlyByImpact(),
     ])
-      .then(([d, m, i]) => {
+      .then(([d, m, i, impact, monthlyImpact]) => {
         setDaily(d);
         setMonthly(m);
         setIncidents(i);
+        setByImpact(impact);
+        setMonthlyByImpact(monthlyImpact);
         setLoading(false);
       })
       .catch((err) => {
@@ -75,6 +105,17 @@ export default function BellingcatSubtab() {
         setLoading(false);
       });
   }, []);
+
+  // Filter data based on selected impact types
+  const filteredByImpact = useMemo(() =>
+    byImpact.filter(i => selectedImpacts.has(i.impact_type)),
+    [byImpact, selectedImpacts]
+  );
+
+  const filteredMonthlyByImpact = useMemo(() =>
+    monthlyByImpact.filter(m => selectedImpacts.has(m.impact_type)),
+    [monthlyByImpact, selectedImpacts]
+  );
 
   if (loading) {
     return (
@@ -94,42 +135,38 @@ export default function BellingcatSubtab() {
     );
   }
 
-  // Calculate cumulative incidents
-  let cumulative = 0;
-  const cumulativeData = monthly.map(m => {
-    cumulative += m.incidents;
-    return {
-      month: m.month,
-      incidents: m.incidents,
-      cumulative,
-    };
-  });
+  // Aggregate monthly data for stacked bars
+  const monthlyAggregated = filteredMonthlyByImpact.reduce((acc, m) => {
+    const key = m.month;
+    if (!acc[key]) acc[key] = { month: key } as Record<string, string | number>;
+    acc[key][m.impact_type] = ((acc[key][m.impact_type] as number) || 0) + m.incidents;
+    return acc;
+  }, {} as Record<string, Record<string, number | string>>);
+
+  const monthlyChartData = Object.values(monthlyAggregated).sort((a, b) =>
+    String(a.month).localeCompare(String(b.month))
+  );
+
+  const visibleTypes = [...selectedImpacts];
+  const months = monthlyChartData.map(d => d.month as string);
+
+  // Stats
+  const totalIncidents = filteredByImpact.reduce((s, i) => s + i.incidents, 0);
+
+  // Pie data for impact types
+  const pieData = filteredByImpact.slice(0, 10).map(i => ({
+    name: i.impact_type,
+    value: i.incidents,
+  }));
 
   // Recent incidents for table
   const recentIncidents = incidents.slice(-20).reverse();
-
-  // Calculate 7-day rolling average
-  const rollingData = daily.slice(7).map((d, i) => {
-    const window = daily.slice(i, i + 7);
-    const avg = window.reduce((s, w) => s + w.incidents, 0) / 7;
-    return {
-      date: d.date,
-      incidents: d.incidents,
-      rolling_avg: Number(avg.toFixed(2)),
-    };
-  });
-
-  // Stats
-  const totalIncidents = incidents.length;
-  const avgIncidentsPerDay = daily.reduce((s, d) => s + d.incidents, 0) / daily.length;
-  const maxMonthly = Math.max(...monthly.map(m => m.incidents));
-  const peakMonth = monthly.find(m => m.incidents === maxMonthly)?.month || 'N/A';
 
   return (
     <div className="conflict-subtab">
       <h2>Bellingcat - OSINT-Verified Civilian Harm</h2>
       <p className="tab-subtitle">
-        Open-source verified civilian harm incidents from the Ukraine TimeMap
+        Open-source verified civilian harm incidents by infrastructure type
       </p>
 
       {/* Stats row */}
@@ -139,115 +176,112 @@ export default function BellingcatSubtab() {
           <span className="stat-label">Total Incidents</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{avgIncidentsPerDay.toFixed(2)}</span>
-          <span className="stat-label">Avg/Day</span>
+          <span className="stat-value">{selectedImpacts.size}</span>
+          <span className="stat-label">Impact Types Selected</span>
         </div>
         <div className="stat-card">
-          <span className="stat-value">{maxMonthly}</span>
-          <span className="stat-label">Peak Monthly</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-value">{peakMonth}</span>
-          <span className="stat-label">Peak Month</span>
+          <span className="stat-value">{byImpact.length}</span>
+          <span className="stat-label">Total Categories</span>
         </div>
       </div>
 
-      {/* Daily Incidents with Rolling Average */}
-      <div className="chart-card">
-        <h3>Daily Incidents (with 7-day Rolling Average) <SourceLink source="Bellingcat" /></h3>
-        <p className="chart-note">Drag on chart to zoom. Click legend to toggle series.</p>
-        <Plot
-          data={[
-            {
-              x: rollingData.map(d => d.date),
-              y: rollingData.map(d => d.incidents),
-              type: 'scatter' as const,
-              mode: 'lines' as const,
-              name: 'Daily Incidents',
-              line: { color: '#f97316', width: 1 },
-              opacity: 0.5,
-              hoverlabel: { font: { color: '#fff' } },
-            },
-            {
-              x: rollingData.map(d => d.date),
-              y: rollingData.map(d => d.rolling_avg),
-              type: 'scatter' as const,
-              mode: 'lines' as const,
-              name: '7-day Average',
-              line: { color: '#ef4444', width: 2 },
-              hoverlabel: { font: { color: '#fff' } },
-            },
-          ]}
-          layout={{
-            ...darkLayout,
-            height: 350,
-            xaxis: {
-              ...darkLayout.xaxis,
-              rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
-            },
-            legend: { ...darkLayout.legend, orientation: 'h' as const, y: 1.1 },
-          }}
-          config={plotConfig}
-          style={{ width: '100%' }}
-        />
-      </div>
-
-      <div className="chart-grid-2">
-        {/* Monthly Incidents */}
+      {selectedImpacts.size === 0 ? (
         <div className="chart-card">
-          <h3>Monthly Incidents <SourceLink source="Bellingcat" /></h3>
-          <Plot
-            data={[
-              {
-                x: monthly.map(d => d.month),
-                y: monthly.map(d => d.incidents),
+          <p className="no-data-msg">Select at least one impact type from the sidebar to view data.</p>
+        </div>
+      ) : (
+        <>
+          {/* Monthly Incidents by Impact Type - Stacked Bar (PRIMARY) */}
+          <div className="chart-card">
+            <h3>Monthly Incidents by Impact Type <SourceLink source="Bellingcat" /></h3>
+            <p className="chart-note">Stacked bars show infrastructure impact breakdown. Drag to zoom. Click legend to toggle.</p>
+            <Plot
+              data={visibleTypes.map((type) => ({
+                x: months,
+                y: monthlyChartData.map(d => (d[type] as number) || 0),
                 type: 'bar' as const,
-                marker: { color: '#ef4444' },
+                name: type,
+                marker: { color: IMPACT_COLORS[type] || '#888' },
                 hoverlabel: { font: { color: '#fff' } },
-              },
-            ]}
-            layout={{
-              ...darkLayout,
-              height: 300,
-              xaxis: {
-                ...darkLayout.xaxis,
-                rangeslider: { visible: true, thickness: 0.1, bgcolor: '#1a1a2e', bordercolor: '#333' },
-              },
-            }}
-            config={plotConfig}
-            style={{ width: '100%' }}
-          />
-        </div>
+              }))}
+              layout={{
+                ...darkLayout,
+                barmode: 'stack',
+                height: 400,
+                xaxis: {
+                  ...darkLayout.xaxis,
+                  rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
+                },
+                legend: { ...darkLayout.legend, orientation: 'h' as const, y: 1.15 },
+              }}
+              config={plotConfig}
+              style={{ width: '100%' }}
+            />
+          </div>
 
-        {/* Cumulative Incidents */}
-        <div className="chart-card">
-          <h3>Cumulative Incidents Over Time <SourceLink source="Bellingcat" /></h3>
-          <Plot
-            data={[
-              {
-                x: cumulativeData.map(d => d.month),
-                y: cumulativeData.map(d => d.cumulative),
-                type: 'scatter' as const,
-                mode: 'lines' as const,
-                fill: 'tozeroy',
-                line: { color: '#ef4444', width: 1.5 },
-                fillcolor: 'rgba(239, 68, 68, 0.3)',
-                hoverlabel: { font: { color: '#fff' } },
-              },
-            ]}
-            layout={{
-              ...darkLayout,
-              height: 300,
-              xaxis: {
-                ...darkLayout.xaxis,
-                rangeslider: { visible: true, thickness: 0.1, bgcolor: '#1a1a2e', bordercolor: '#333' },
-              },
-            }}
-            config={plotConfig}
-            style={{ width: '100%' }}
-          />
-        </div>
-      </div>
+          <div className="chart-grid-2">
+            {/* Pie chart for impact types */}
+            <div className="chart-card">
+              <h3>Incidents by Impact Type <SourceLink source="Bellingcat" /></h3>
+              <Plot
+                data={[
+                  {
+                    values: pieData.map(d => d.value),
+                    labels: pieData.map(d => d.name),
+                    type: 'pie' as const,
+                    hole: 0.4,
+                    marker: { colors: pieData.map(d => IMPACT_COLORS[d.name] || '#888') },
+                    textinfo: 'percent',
+                    textposition: 'inside',
+                    textfont: { color: '#fff', size: 10 },
+                    hovertemplate: '%{label}<br>%{value:,} incidents<br>%{percent}<extra></extra>',
+                    hoverlabel: { font: { color: '#fff' } },
+                  },
+                ]}
+                layout={{
+                  ...darkLayout,
+                  height: 300,
+                  margin: { l: 20, r: 20, t: 20, b: 20 },
+                  showlegend: true,
+                  legend: { ...darkLayout.legend, orientation: 'v' as const, x: 1, y: 0.5, font: { size: 9 } },
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                style={{ width: '100%' }}
+              />
+            </div>
+
+            {/* Horizontal bar chart for impact types */}
+            <div className="chart-card">
+              <h3>Top Impact Types <SourceLink source="Bellingcat" /></h3>
+              <Plot
+                data={[
+                  {
+                    x: pieData.map(d => d.value),
+                    y: pieData.map(d => d.name),
+                    type: 'bar' as const,
+                    orientation: 'h' as const,
+                    marker: { color: pieData.map(d => IMPACT_COLORS[d.name] || '#888') },
+                    text: pieData.map(d => d.value.toLocaleString()),
+                    textposition: 'outside' as const,
+                    textfont: { color: '#888', size: 10 },
+                    hovertemplate: '%{y}<br>%{x:,} incidents<extra></extra>',
+                    hoverlabel: { font: { color: '#fff' } },
+                  },
+                ]}
+                layout={{
+                  ...darkLayout,
+                  height: 300,
+                  margin: { l: 150, r: 60, t: 20, b: 40 },
+                  xaxis: { ...darkLayout.xaxis, tickformat: ',' },
+                  yaxis: { ...darkLayout.yaxis, autorange: 'reversed' as const },
+                }}
+                config={{ displayModeBar: false, responsive: true }}
+                style={{ width: '100%' }}
+              />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Recent Incidents Table */}
       <div className="chart-card">
