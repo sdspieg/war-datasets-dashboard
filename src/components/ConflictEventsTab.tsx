@@ -58,19 +58,11 @@ export default function ConflictEventsTab() {
   const [eventsByRegion, setEventsByRegion] = useState<EventByRegion[]>([]);
   const [monthlyEvents, setMonthlyEvents] = useState<MonthlyEventData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [hiddenTypes, setHiddenTypes] = useState<Set<string>>(new Set());
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
-  // Toggle visibility of a series when clicking legend
+  // Toggle visibility: click to show only that type, click again to show all
   const handleLegendClick = (dataKey: string) => {
-    setHiddenTypes(prev => {
-      const next = new Set(prev);
-      if (next.has(dataKey)) {
-        next.delete(dataKey);
-      } else {
-        next.add(dataKey);
-      }
-      return next;
-    });
+    setSelectedType(prev => prev === dataKey ? null : dataKey);
   };
   const [error, setError] = useState<string | null>(null);
 
@@ -333,7 +325,7 @@ export default function ConflictEventsTab() {
 
       <div className="chart-card">
         <h3>Monthly Events by Type <span className="chart-source">(ACLED)</span></h3>
-        <p className="chart-note">Click legend items to show/hide categories</p>
+        <p className="chart-note">Click a legend item to show only that category; click again to show all</p>
         <ResponsiveContainer width="100%" height={350}>
           <BarChart data={monthlyChartData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#333" />
@@ -356,7 +348,11 @@ export default function ConflictEventsTab() {
             <Legend
               onClick={(e) => handleLegendClick(e.dataKey as string)}
               formatter={(value: string) => (
-                <span style={{ color: hiddenTypes.has(value) ? '#666' : '#fff', textDecoration: hiddenTypes.has(value) ? 'line-through' : 'none', cursor: 'pointer' }}>
+                <span style={{
+                  color: selectedType === null || selectedType === value ? '#fff' : '#666',
+                  fontWeight: selectedType === value ? 'bold' : 'normal',
+                  cursor: 'pointer'
+                }}>
                   {value}
                 </span>
               )}
@@ -367,7 +363,7 @@ export default function ConflictEventsTab() {
                 dataKey={type}
                 stackId="a"
                 fill={COLORS[i % COLORS.length]}
-                hide={hiddenTypes.has(type)}
+                hide={selectedType !== null && selectedType !== type}
               />
             ))}
           </BarChart>
