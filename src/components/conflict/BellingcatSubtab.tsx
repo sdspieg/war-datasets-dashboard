@@ -11,11 +11,14 @@ import type {
   BellingcatIncident,
 } from '../../types';
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a href={`#sources-${source.toLowerCase()}`} className="source-link-inline">
-    ({source})
-  </a>
-);
+const SourceLink = ({ source, sourceId }: { source: string; sourceId?: string }) => {
+  const id = sourceId || source.toLowerCase();
+  return (
+    <a href={`#sources-${id}`} className="source-link-inline">
+      ({source})
+    </a>
+  );
+};
 
 const darkLayout = {
   paper_bgcolor: 'transparent',

@@ -5,11 +5,14 @@ import type { EventByType, EventByRegion, MonthlyEventData, ACLEDEventType } fro
 
 const fmt = (n: number) => n.toLocaleString();
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a href={`#sources-${source.toLowerCase()}`} className="source-link-inline">
-    ({source})
-  </a>
-);
+const SourceLink = ({ source, sourceId }: { source: string; sourceId?: string }) => {
+  const id = sourceId || source.toLowerCase();
+  return (
+    <a href={`#sources-${id}`} className="source-link-inline">
+      ({source})
+    </a>
+  );
+};
 
 const PLOTLY_COLORS = [
   '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899',

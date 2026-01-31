@@ -21,18 +21,39 @@ import { DualPaneInfo, RateOfChangeInfo } from './InfoModal';
 // Format number with thousands separators
 const fmt = (n: number) => n.toLocaleString();
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a
-    href="#sources"
-    className="source-link-inline"
-    onClick={(e) => {
-      e.preventDefault();
-      window.location.hash = 'sources';
-    }}
-  >
-    ({source})
-  </a>
-);
+const SOURCE_ID_MAP: Record<string, string> = {
+  'ACLED': 'acled',
+  'UCDP': 'ucdp',
+  'ACLED/UCDP': 'acled',
+  'VIINA': 'viina',
+  'Bellingcat': 'bellingcat',
+  'MDAA Tracker': 'mdaa',
+  'Ukraine MOD': 'equipment',
+  'DeepState': 'deepstate',
+  'OHCHR': 'ohchr',
+  'UNHCR': 'unhcr',
+  'HDX HAPI': 'hapi',
+};
+
+const SourceLink = ({ source }: { source: string }) => {
+  const sourceId = SOURCE_ID_MAP[source] || source.toLowerCase();
+  return (
+    <a
+      href={`#source-${sourceId}`}
+      className="source-link-inline"
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.hash = 'sources';
+        setTimeout(() => {
+          const el = document.getElementById(`source-${sourceId}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }}
+    >
+      ({source})
+    </a>
+  );
+};
 
 const EQUIPMENT_COLORS: Record<string, string> = {
   tank: '#ef4444',
@@ -260,19 +281,19 @@ export default function EquipmentTab() {
               />
               <Legend
                 onClick={(e) => handleEquipmentLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
+                formatter={(value: string, entry: any) => (
                   <span style={{
-                    color: selectedEquipmentSeries === null || selectedEquipmentSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedEquipmentSeries === value ? 'bold' : 'normal',
+                    color: selectedEquipmentSeries === null || selectedEquipmentSeries === entry.dataKey ? '#fff' : '#666',
+                    fontWeight: selectedEquipmentSeries === entry.dataKey ? 'bold' : 'normal',
                     cursor: 'pointer'
                   }}>
                     {value}
                   </span>
                 )}
               />
-              <Line type="monotone" dataKey="tank" name="Tanks" stroke={EQUIPMENT_COLORS.tank} dot={false} strokeOpacity={selectedEquipmentSeries === null || selectedEquipmentSeries === 'tank' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="apc" name="APCs" stroke={EQUIPMENT_COLORS.apc} dot={false} strokeOpacity={selectedEquipmentSeries === null || selectedEquipmentSeries === 'apc' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="field_artillery" name="Artillery" stroke={EQUIPMENT_COLORS.field_artillery} dot={false} strokeOpacity={selectedEquipmentSeries === null || selectedEquipmentSeries === 'field_artillery' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="tank" name="Tanks" stroke={EQUIPMENT_COLORS.tank} dot={false} hide={selectedEquipmentSeries !== null && selectedEquipmentSeries !== 'tank'} />
+              <Line type="monotone" dataKey="apc" name="APCs" stroke={EQUIPMENT_COLORS.apc} dot={false} hide={selectedEquipmentSeries !== null && selectedEquipmentSeries !== 'apc'} />
+              <Line type="monotone" dataKey="field_artillery" name="Artillery" stroke={EQUIPMENT_COLORS.field_artillery} dot={false} hide={selectedEquipmentSeries !== null && selectedEquipmentSeries !== 'field_artillery'} />
             </LineChart>
           </ResponsiveContainer>
           <ResponsiveContainer width="100%" height={200}>
@@ -294,22 +315,11 @@ export default function EquipmentTab() {
                 labelFormatter={(d) => new Date(d).toLocaleDateString()}
                 formatter={(value: number) => `${value.toFixed(2)}%`}
               />
-              <Legend
-                onClick={(e) => handleEquipmentLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
-                  <span style={{
-                    color: selectedEquipmentSeries === null || selectedEquipmentSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedEquipmentSeries === value ? 'bold' : 'normal',
-                    cursor: 'pointer'
-                  }}>
-                    {value}
-                  </span>
-                )}
-              />
+              <Legend />
               <ReferenceLine y={0} stroke="#888" />
-              <Line type="monotone" dataKey="tank_rate" name="Tanks Rate" stroke={EQUIPMENT_COLORS.tank} dot={false} strokeOpacity={selectedEquipmentSeries === null || selectedEquipmentSeries === 'tank' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="apc_rate" name="APCs Rate" stroke={EQUIPMENT_COLORS.apc} dot={false} strokeOpacity={selectedEquipmentSeries === null || selectedEquipmentSeries === 'apc' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="artillery_rate" name="Artillery Rate" stroke={EQUIPMENT_COLORS.field_artillery} dot={false} strokeOpacity={selectedEquipmentSeries === null || selectedEquipmentSeries === 'field_artillery' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="tank_rate" name="Tanks Rate" stroke={EQUIPMENT_COLORS.tank} dot={false} hide={selectedEquipmentSeries !== null && selectedEquipmentSeries !== 'tank'} />
+              <Line type="monotone" dataKey="apc_rate" name="APCs Rate" stroke={EQUIPMENT_COLORS.apc} dot={false} hide={selectedEquipmentSeries !== null && selectedEquipmentSeries !== 'apc'} />
+              <Line type="monotone" dataKey="artillery_rate" name="Artillery Rate" stroke={EQUIPMENT_COLORS.field_artillery} dot={false} hide={selectedEquipmentSeries !== null && selectedEquipmentSeries !== 'field_artillery'} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -340,19 +350,19 @@ export default function EquipmentTab() {
               />
               <Legend
                 onClick={(e) => handleAirLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
+                formatter={(value: string, entry: any) => (
                   <span style={{
-                    color: selectedAirSeries === null || selectedAirSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedAirSeries === value ? 'bold' : 'normal',
+                    color: selectedAirSeries === null || selectedAirSeries === entry.dataKey ? '#fff' : '#666',
+                    fontWeight: selectedAirSeries === entry.dataKey ? 'bold' : 'normal',
                     cursor: 'pointer'
                   }}>
                     {value}
                   </span>
                 )}
               />
-              <Line type="monotone" dataKey="aircraft" name="Aircraft" stroke={EQUIPMENT_COLORS.aircraft} dot={false} strokeOpacity={selectedAirSeries === null || selectedAirSeries === 'aircraft' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="helicopter" name="Helicopters" stroke={EQUIPMENT_COLORS.helicopter} dot={false} strokeOpacity={selectedAirSeries === null || selectedAirSeries === 'helicopter' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="drone" name="Drones" stroke={EQUIPMENT_COLORS.drone} dot={false} strokeOpacity={selectedAirSeries === null || selectedAirSeries === 'drone' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="aircraft" name="Aircraft" stroke={EQUIPMENT_COLORS.aircraft} dot={false} hide={selectedAirSeries !== null && selectedAirSeries !== 'aircraft'} />
+              <Line type="monotone" dataKey="helicopter" name="Helicopters" stroke={EQUIPMENT_COLORS.helicopter} dot={false} hide={selectedAirSeries !== null && selectedAirSeries !== 'helicopter'} />
+              <Line type="monotone" dataKey="drone" name="Drones" stroke={EQUIPMENT_COLORS.drone} dot={false} hide={selectedAirSeries !== null && selectedAirSeries !== 'drone'} />
             </LineChart>
           </ResponsiveContainer>
         </div>

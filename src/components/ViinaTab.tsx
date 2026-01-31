@@ -16,6 +16,8 @@ import {
   LabelList,
   Brush,
 } from 'recharts';
+import ViinaEChartsDemo from './charts/ViinaEChartsDemo';
+import ViinaPlotlyDemo from './charts/ViinaPlotlyDemo';
 import {
   loadViinaDaily,
   loadViinaMonthly,
@@ -70,18 +72,39 @@ const SOURCE_LABELS: Record<string, string> = {
 
 type TimeUnit = 'days' | 'weeks' | 'months';
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a
-    href="#sources"
-    className="source-link-inline"
-    onClick={(e) => {
-      e.preventDefault();
-      window.location.hash = 'sources';
-    }}
-  >
-    ({source})
-  </a>
-);
+const SOURCE_ID_MAP: Record<string, string> = {
+  'ACLED': 'acled',
+  'UCDP': 'ucdp',
+  'ACLED/UCDP': 'acled',
+  'VIINA': 'viina',
+  'Bellingcat': 'bellingcat',
+  'MDAA Tracker': 'mdaa',
+  'Ukraine MOD': 'equipment',
+  'DeepState': 'deepstate',
+  'OHCHR': 'ohchr',
+  'UNHCR': 'unhcr',
+  'HDX HAPI': 'hapi',
+};
+
+const SourceLink = ({ source }: { source: string }) => {
+  const sourceId = SOURCE_ID_MAP[source] || source.toLowerCase();
+  return (
+    <a
+      href={`#source-${sourceId}`}
+      className="source-link-inline"
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.hash = 'sources';
+        setTimeout(() => {
+          const el = document.getElementById(`source-${sourceId}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }}
+    >
+      ({source})
+    </a>
+  );
+};
 
 export default function ViinaTab() {
   const [daily, setDaily] = useState<ViinaDaily[]>([]);
@@ -256,10 +279,10 @@ export default function ViinaTab() {
             />
             <Legend
               onClick={(e) => handleLegendClick(e.dataKey as string)}
-              formatter={(value: string) => (
+              formatter={(value: string, entry: any) => (
                 <span style={{
-                  color: selectedSource === null || selectedSource === value ? '#fff' : '#666',
-                  fontWeight: selectedSource === value ? 'bold' : 'normal',
+                  color: selectedSource === null || selectedSource === entry.dataKey ? '#fff' : '#666',
+                  fontWeight: selectedSource === entry.dataKey ? 'bold' : 'normal',
                   cursor: 'pointer'
                 }}>
                   {value}
@@ -279,7 +302,7 @@ export default function ViinaTab() {
                 dataKey={source}
                 stackId="a"
                 fill={TAB20_COLORS[i % TAB20_COLORS.length]}
-                fillOpacity={selectedSource === null || selectedSource === source ? 1 : 0.15}
+                hide={selectedSource !== null && selectedSource !== source}
               />
             ))}
           </BarChart>
@@ -319,6 +342,12 @@ export default function ViinaTab() {
         </ResponsiveContainer>
       </div>
 
+      {/* ECharts Demo */}
+      <ViinaEChartsDemo data={daily} />
+
+      {/* Plotly Demo - True drag-to-zoom */}
+      <ViinaPlotlyDemo data={daily} />
+
       <div className="chart-grid-2">
         <div className="chart-card">
           <h3>Events by News Source <SourceLink source="VIINA" /></h3>
@@ -341,6 +370,7 @@ export default function ViinaTab() {
               </Pie>
               <Tooltip
                 contentStyle={{ background: '#1a1a2e', border: '1px solid #333', color: '#fff' }}
+                itemStyle={{ color: '#fff' }}
                 formatter={(value: number, name: string) => [fmt(value), name]}
               />
               <Legend

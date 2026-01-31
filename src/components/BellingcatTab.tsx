@@ -27,18 +27,39 @@ import type {
 
 const fmt = (n: number) => n.toLocaleString();
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a
-    href="#sources"
-    className="source-link-inline"
-    onClick={(e) => {
-      e.preventDefault();
-      window.location.hash = 'sources';
-    }}
-  >
-    ({source})
-  </a>
-);
+const SOURCE_ID_MAP: Record<string, string> = {
+  'ACLED': 'acled',
+  'UCDP': 'ucdp',
+  'ACLED/UCDP': 'acled',
+  'VIINA': 'viina',
+  'Bellingcat': 'bellingcat',
+  'MDAA Tracker': 'mdaa',
+  'Ukraine MOD': 'equipment',
+  'DeepState': 'deepstate',
+  'OHCHR': 'ohchr',
+  'UNHCR': 'unhcr',
+  'HDX HAPI': 'hapi',
+};
+
+const SourceLink = ({ source }: { source: string }) => {
+  const sourceId = SOURCE_ID_MAP[source] || source.toLowerCase();
+  return (
+    <a
+      href={`#source-${sourceId}`}
+      className="source-link-inline"
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.hash = 'sources';
+        setTimeout(() => {
+          const el = document.getElementById(`source-${sourceId}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }}
+    >
+      ({source})
+    </a>
+  );
+};
 
 export default function BellingcatTab() {
   const [daily, setDaily] = useState<BellingcatDaily[]>([]);
@@ -142,10 +163,10 @@ export default function BellingcatTab() {
             />
             <Legend
               onClick={(e) => handleLegendClick(e.dataKey as string)}
-              formatter={(value: string) => (
+              formatter={(value: string, entry: any) => (
                 <span style={{
-                  color: selectedSeries === null || selectedSeries === value ? '#fff' : '#666',
-                  fontWeight: selectedSeries === value ? 'bold' : 'normal',
+                  color: selectedSeries === null || selectedSeries === entry.dataKey ? '#fff' : '#666',
+                  fontWeight: selectedSeries === entry.dataKey ? 'bold' : 'normal',
                   cursor: 'pointer'
                 }}>
                   {value}
@@ -166,7 +187,8 @@ export default function BellingcatTab() {
               stroke="#f97316"
               dot={false}
               strokeWidth={1}
-              strokeOpacity={selectedSeries === null ? 0.5 : selectedSeries === 'incidents' ? 1 : 0.15}
+              opacity={0.5}
+              hide={selectedSeries !== null && selectedSeries !== 'incidents'}
             />
             <Line
               type="monotone"
@@ -175,7 +197,7 @@ export default function BellingcatTab() {
               stroke="#ef4444"
               dot={false}
               strokeWidth={2}
-              strokeOpacity={selectedSeries === null || selectedSeries === 'rolling_avg' ? 1 : 0.15}
+              hide={selectedSeries !== null && selectedSeries !== 'rolling_avg'}
             />
           </LineChart>
         </ResponsiveContainer>

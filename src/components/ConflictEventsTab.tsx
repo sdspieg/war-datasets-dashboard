@@ -25,18 +25,39 @@ import type { DailyEvent, EventByType, EventByRegion, MonthlyEventData } from '.
 // Format number with thousands separators
 const fmt = (n: number) => n.toLocaleString();
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a
-    href="#sources"
-    className="source-link-inline"
-    onClick={(e) => {
-      e.preventDefault();
-      window.location.hash = 'sources';
-    }}
-  >
-    ({source})
-  </a>
-);
+const SOURCE_ID_MAP: Record<string, string> = {
+  'ACLED': 'acled',
+  'UCDP': 'ucdp',
+  'ACLED/UCDP': 'acled',
+  'VIINA': 'viina',
+  'Bellingcat': 'bellingcat',
+  'MDAA Tracker': 'mdaa',
+  'Ukraine MOD': 'equipment',
+  'DeepState': 'deepstate',
+  'OHCHR': 'ohchr',
+  'UNHCR': 'unhcr',
+  'HDX HAPI': 'hapi',
+};
+
+const SourceLink = ({ source }: { source: string }) => {
+  const sourceId = SOURCE_ID_MAP[source] || source.toLowerCase();
+  return (
+    <a
+      href={`#source-${sourceId}`}
+      className="source-link-inline"
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.hash = 'sources';
+        setTimeout(() => {
+          const el = document.getElementById(`source-${sourceId}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }}
+    >
+      ({source})
+    </a>
+  );
+};
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
 
@@ -246,18 +267,18 @@ export default function ConflictEventsTab() {
               />
               <Legend
                 onClick={(e) => handleEventLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
+                formatter={(value: string, entry: any) => (
                   <span style={{
-                    color: selectedEventSeries === null || selectedEventSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedEventSeries === value ? 'bold' : 'normal',
+                    color: selectedEventSeries === null || selectedEventSeries === entry.dataKey ? '#fff' : '#666',
+                    fontWeight: selectedEventSeries === entry.dataKey ? 'bold' : 'normal',
                     cursor: 'pointer'
                   }}>
                     {value}
                   </span>
                 )}
               />
-              <Line type="monotone" dataKey="acled_events" name="ACLED Events" stroke="#ef4444" dot={false} strokeWidth={1.5} strokeOpacity={selectedEventSeries === null || selectedEventSeries === 'acled_events' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="ucdp_events" name="UCDP Events" stroke="#3b82f6" dot={false} strokeWidth={1.5} strokeOpacity={selectedEventSeries === null || selectedEventSeries === 'ucdp_events' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="acled_events" name="ACLED Events" stroke="#ef4444" dot={false} strokeWidth={1.5} hide={selectedEventSeries !== null && selectedEventSeries !== 'acled_events'} />
+              <Line type="monotone" dataKey="ucdp_events" name="UCDP Events" stroke="#3b82f6" dot={false} strokeWidth={1.5} hide={selectedEventSeries !== null && selectedEventSeries !== 'ucdp_events'} />
             </LineChart>
           </ResponsiveContainer>
           <ResponsiveContainer width="100%" height={200}>
@@ -278,21 +299,10 @@ export default function ConflictEventsTab() {
                 labelFormatter={(d) => new Date(d).toLocaleDateString()}
                 formatter={(value: number, name: string) => [`${value.toFixed(1)}%`, name]}
               />
-              <Legend
-                onClick={(e) => handleEventLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
-                  <span style={{
-                    color: selectedEventSeries === null || selectedEventSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedEventSeries === value ? 'bold' : 'normal',
-                    cursor: 'pointer'
-                  }}>
-                    {value}
-                  </span>
-                )}
-              />
+              <Legend />
               <ReferenceLine y={0} stroke="#888" />
-              <Line type="monotone" dataKey="acled_rate" name="ACLED Rate" stroke="#ef4444" dot={false} strokeWidth={1.5} strokeOpacity={selectedEventSeries === null || selectedEventSeries === 'acled_events' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="ucdp_rate" name="UCDP Rate" stroke="#3b82f6" dot={false} strokeWidth={1.5} strokeOpacity={selectedEventSeries === null || selectedEventSeries === 'ucdp_events' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="acled_rate" name="ACLED Rate" stroke="#ef4444" dot={false} strokeWidth={1.5} hide={selectedEventSeries !== null && selectedEventSeries !== 'acled_events'} />
+              <Line type="monotone" dataKey="ucdp_rate" name="UCDP Rate" stroke="#3b82f6" dot={false} strokeWidth={1.5} hide={selectedEventSeries !== null && selectedEventSeries !== 'ucdp_events'} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -390,10 +400,10 @@ export default function ConflictEventsTab() {
             />
             <Legend
               onClick={(e) => handleLegendClick(e.dataKey as string)}
-              formatter={(value: string) => (
+              formatter={(value: string, entry: any) => (
                 <span style={{
-                  color: selectedType === null || selectedType === value ? '#fff' : '#666',
-                  fontWeight: selectedType === value ? 'bold' : 'normal',
+                  color: selectedType === null || selectedType === entry.dataKey ? '#fff' : '#666',
+                  fontWeight: selectedType === entry.dataKey ? 'bold' : 'normal',
                   cursor: 'pointer'
                 }}>
                   {value}
@@ -406,7 +416,7 @@ export default function ConflictEventsTab() {
                 dataKey={type}
                 stackId="a"
                 fill={COLORS[i % COLORS.length]}
-                fillOpacity={selectedType === null || selectedType === type ? 1 : 0.15}
+                hide={selectedType !== null && selectedType !== type}
               />
             ))}
           </BarChart>
@@ -439,18 +449,18 @@ export default function ConflictEventsTab() {
               />
               <Legend
                 onClick={(e) => handleFatalityLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
+                formatter={(value: string, entry: any) => (
                   <span style={{
-                    color: selectedFatalitySeries === null || selectedFatalitySeries === value ? '#fff' : '#666',
-                    fontWeight: selectedFatalitySeries === value ? 'bold' : 'normal',
+                    color: selectedFatalitySeries === null || selectedFatalitySeries === entry.dataKey ? '#fff' : '#666',
+                    fontWeight: selectedFatalitySeries === entry.dataKey ? 'bold' : 'normal',
                     cursor: 'pointer'
                   }}>
                     {value}
                   </span>
                 )}
               />
-              <Line type="monotone" dataKey="acled_fatalities" name="ACLED Fatalities" stroke="#dc2626" dot={false} strokeWidth={1.5} strokeOpacity={selectedFatalitySeries === null || selectedFatalitySeries === 'acled_fatalities' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="ucdp_fatalities" name="UCDP Fatalities" stroke="#2563eb" dot={false} strokeWidth={1.5} strokeOpacity={selectedFatalitySeries === null || selectedFatalitySeries === 'ucdp_fatalities' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="acled_fatalities" name="ACLED Fatalities" stroke="#dc2626" dot={false} strokeWidth={1.5} hide={selectedFatalitySeries !== null && selectedFatalitySeries !== 'acled_fatalities'} />
+              <Line type="monotone" dataKey="ucdp_fatalities" name="UCDP Fatalities" stroke="#2563eb" dot={false} strokeWidth={1.5} hide={selectedFatalitySeries !== null && selectedFatalitySeries !== 'ucdp_fatalities'} />
             </LineChart>
           </ResponsiveContainer>
           <ResponsiveContainer width="100%" height={200}>
@@ -471,21 +481,10 @@ export default function ConflictEventsTab() {
                 labelFormatter={(d) => new Date(d).toLocaleDateString()}
                 formatter={(value: number, name: string) => [`${value.toFixed(1)}%`, name]}
               />
-              <Legend
-                onClick={(e) => handleFatalityLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
-                  <span style={{
-                    color: selectedFatalitySeries === null || selectedFatalitySeries === value ? '#fff' : '#666',
-                    fontWeight: selectedFatalitySeries === value ? 'bold' : 'normal',
-                    cursor: 'pointer'
-                  }}>
-                    {value}
-                  </span>
-                )}
-              />
+              <Legend />
               <ReferenceLine y={0} stroke="#888" />
-              <Line type="monotone" dataKey="acled_rate" name="ACLED Rate" stroke="#dc2626" dot={false} strokeWidth={1.5} strokeOpacity={selectedFatalitySeries === null || selectedFatalitySeries === 'acled_fatalities' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="ucdp_rate" name="UCDP Rate" stroke="#2563eb" dot={false} strokeWidth={1.5} strokeOpacity={selectedFatalitySeries === null || selectedFatalitySeries === 'ucdp_fatalities' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="acled_rate" name="ACLED Rate" stroke="#dc2626" dot={false} strokeWidth={1.5} hide={selectedFatalitySeries !== null && selectedFatalitySeries !== 'acled_fatalities'} />
+              <Line type="monotone" dataKey="ucdp_rate" name="UCDP Rate" stroke="#2563eb" dot={false} strokeWidth={1.5} hide={selectedFatalitySeries !== null && selectedFatalitySeries !== 'ucdp_fatalities'} />
             </LineChart>
           </ResponsiveContainer>
         </div>

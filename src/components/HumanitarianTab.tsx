@@ -43,18 +43,39 @@ const TAB20_COLORS = [
   '#c7c7c7', '#bcbd22', '#dbdb8d', '#17becf', '#9edae5',
 ];
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a
-    href="#sources"
-    className="source-link-inline"
-    onClick={(e) => {
-      e.preventDefault();
-      window.location.hash = 'sources';
-    }}
-  >
-    ({source})
-  </a>
-);
+const SOURCE_ID_MAP: Record<string, string> = {
+  'ACLED': 'acled',
+  'UCDP': 'ucdp',
+  'ACLED/UCDP': 'acled',
+  'VIINA': 'viina',
+  'Bellingcat': 'bellingcat',
+  'MDAA Tracker': 'mdaa',
+  'Ukraine MOD': 'equipment',
+  'DeepState': 'deepstate',
+  'OHCHR': 'ohchr',
+  'UNHCR': 'unhcr',
+  'HDX HAPI': 'hapi',
+};
+
+const SourceLink = ({ source }: { source: string }) => {
+  const sourceId = SOURCE_ID_MAP[source] || source.toLowerCase();
+  return (
+    <a
+      href={`#source-${sourceId}`}
+      className="source-link-inline"
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.hash = 'sources';
+        setTimeout(() => {
+          const el = document.getElementById(`source-${sourceId}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }}
+    >
+      ({source})
+    </a>
+  );
+};
 
 export default function HumanitarianTab() {
   const [casualties, setCasualties] = useState<CasualtyData[]>([]);

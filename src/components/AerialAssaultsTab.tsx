@@ -24,18 +24,39 @@ import { CorrelationInfo, DualPaneInfo } from './InfoModal';
 // Format number with thousands separators
 const fmt = (n: number) => n.toLocaleString();
 
-const SourceLink = ({ source }: { source: string }) => (
-  <a
-    href="#sources"
-    className="source-link-inline"
-    onClick={(e) => {
-      e.preventDefault();
-      window.location.hash = 'sources';
-    }}
-  >
-    ({source})
-  </a>
-);
+const SOURCE_ID_MAP: Record<string, string> = {
+  'ACLED': 'acled',
+  'UCDP': 'ucdp',
+  'ACLED/UCDP': 'acled',
+  'VIINA': 'viina',
+  'Bellingcat': 'bellingcat',
+  'MDAA Tracker': 'mdaa',
+  'Ukraine MOD': 'equipment',
+  'DeepState': 'deepstate',
+  'OHCHR': 'ohchr',
+  'UNHCR': 'unhcr',
+  'HDX HAPI': 'hapi',
+};
+
+const SourceLink = ({ source }: { source: string }) => {
+  const sourceId = SOURCE_ID_MAP[source] || source.toLowerCase();
+  return (
+    <a
+      href={`#source-${sourceId}`}
+      className="source-link-inline"
+      onClick={(e) => {
+        e.preventDefault();
+        window.location.hash = 'sources';
+        setTimeout(() => {
+          const el = document.getElementById(`source-${sourceId}`);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+      }}
+    >
+      ({source})
+    </a>
+  );
+};
 
 // Tab20 color palette for distinctive bar colors
 const TAB20_COLORS = [
@@ -214,18 +235,18 @@ export default function AerialAssaultsTab() {
               />
               <Legend
                 onClick={(e) => handleThreatLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
+                formatter={(value: string, entry: any) => (
                   <span style={{
-                    color: selectedThreatSeries === null || selectedThreatSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedThreatSeries === value ? 'bold' : 'normal',
+                    color: selectedThreatSeries === null || selectedThreatSeries === entry.dataKey ? '#fff' : '#666',
+                    fontWeight: selectedThreatSeries === entry.dataKey ? 'bold' : 'normal',
                     cursor: 'pointer'
                   }}>
                     {value}
                   </span>
                 )}
               />
-              <Line type="monotone" dataKey="avg_launched" name="Launched (7d avg)" stroke="#ef4444" dot={false} strokeWidth={1.5} strokeOpacity={selectedThreatSeries === null || selectedThreatSeries === 'avg_launched' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="avg_destroyed" name="Intercepted (7d avg)" stroke="#22c55e" dot={false} strokeWidth={1.5} strokeOpacity={selectedThreatSeries === null || selectedThreatSeries === 'avg_destroyed' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="avg_launched" name="Launched (7d avg)" stroke="#ef4444" dot={false} strokeWidth={1.5} hide={selectedThreatSeries !== null && selectedThreatSeries !== 'avg_launched'} />
+              <Line type="monotone" dataKey="avg_destroyed" name="Intercepted (7d avg)" stroke="#22c55e" dot={false} strokeWidth={1.5} hide={selectedThreatSeries !== null && selectedThreatSeries !== 'avg_destroyed'} />
             </LineChart>
           </ResponsiveContainer>
           <ResponsiveContainer width="100%" height={200}>
@@ -247,21 +268,10 @@ export default function AerialAssaultsTab() {
                 labelFormatter={(d) => new Date(d).toLocaleDateString()}
                 formatter={(value: number, name: string) => [`${value.toFixed(1)}%`, name]}
               />
-              <Legend
-                onClick={(e) => handleThreatLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
-                  <span style={{
-                    color: selectedThreatSeries === null || selectedThreatSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedThreatSeries === value ? 'bold' : 'normal',
-                    cursor: 'pointer'
-                  }}>
-                    {value}
-                  </span>
-                )}
-              />
+              <Legend />
               <ReferenceLine y={0} stroke="#888" />
-              <Line type="monotone" dataKey="launched_rate" name="Launched Rate" stroke="#ef4444" dot={false} strokeWidth={1.5} strokeOpacity={selectedThreatSeries === null || selectedThreatSeries === 'avg_launched' ? 1 : 0.15} />
-              <Line type="monotone" dataKey="destroyed_rate" name="Intercepted Rate" stroke="#22c55e" dot={false} strokeWidth={1.5} strokeOpacity={selectedThreatSeries === null || selectedThreatSeries === 'avg_destroyed' ? 1 : 0.15} />
+              <Line type="monotone" dataKey="launched_rate" name="Launched Rate" stroke="#ef4444" dot={false} strokeWidth={1.5} hide={selectedThreatSeries !== null && selectedThreatSeries !== 'avg_launched'} />
+              <Line type="monotone" dataKey="destroyed_rate" name="Intercepted Rate" stroke="#22c55e" dot={false} strokeWidth={1.5} hide={selectedThreatSeries !== null && selectedThreatSeries !== 'avg_destroyed'} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -291,10 +301,10 @@ export default function AerialAssaultsTab() {
               />
               <Legend
                 onClick={(e) => handleTypeLegendClick(e.dataKey as string)}
-                formatter={(value: string) => (
+                formatter={(value: string, entry: any) => (
                   <span style={{
-                    color: selectedTypeSeries === null || selectedTypeSeries === value ? '#fff' : '#666',
-                    fontWeight: selectedTypeSeries === value ? 'bold' : 'normal',
+                    color: selectedTypeSeries === null || selectedTypeSeries === entry.dataKey ? '#fff' : '#666',
+                    fontWeight: selectedTypeSeries === entry.dataKey ? 'bold' : 'normal',
                     cursor: 'pointer'
                   }}>
                     {value}
@@ -308,8 +318,7 @@ export default function AerialAssaultsTab() {
                 stackId="1"
                 stroke="#f97316"
                 fill="#f97316"
-                fillOpacity={selectedTypeSeries === null || selectedTypeSeries === 'drones_launched' ? 0.8 : 0.15}
-                strokeOpacity={selectedTypeSeries === null || selectedTypeSeries === 'drones_launched' ? 1 : 0.15}
+                hide={selectedTypeSeries !== null && selectedTypeSeries !== 'drones_launched'}
               />
               <Area
                 type="monotone"
@@ -318,8 +327,7 @@ export default function AerialAssaultsTab() {
                 stackId="1"
                 stroke="#3b82f6"
                 fill="#3b82f6"
-                fillOpacity={selectedTypeSeries === null || selectedTypeSeries === 'missiles_launched' ? 0.8 : 0.15}
-                strokeOpacity={selectedTypeSeries === null || selectedTypeSeries === 'missiles_launched' ? 1 : 0.15}
+                hide={selectedTypeSeries !== null && selectedTypeSeries !== 'missiles_launched'}
               />
             </AreaChart>
           </ResponsiveContainer>

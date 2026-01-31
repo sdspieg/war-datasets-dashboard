@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface DataSource {
   id: string;
@@ -167,7 +167,7 @@ const DATA_SOURCES: DataSource[] = [
     id: 'mdaa',
     name: 'MDAA Tracker',
     fullName: 'Missile Defense Advocacy Alliance - Air War Tracker',
-    url: 'https://missiledefenseadvocacy.org/ukraine-air-war/',
+    url: 'https://www.missiledefenseadvocacy.org/missile-threat-and-proliferation/todays-missile-threat/ukrainian-war-updates/',
     description: 'Daily tracking of aerial threats (missiles and UAVs) with intercept statistics. Provides national-level aggregates of attack and defense outcomes.',
     dateRange: 'Jan 2025 - Aug 2025',
     records: '234 daily records',
@@ -309,9 +309,9 @@ const DATA_SOURCES: DataSource[] = [
   },
 ];
 
-function SourceCard({ source }: { source: DataSource }) {
+function SourceCard({ source, highlighted }: { source: DataSource; highlighted: boolean }) {
   return (
-    <div className="source-card" id={`source-${source.id}`}>
+    <div className={`source-card ${highlighted ? 'highlighted' : ''}`} id={`source-${source.id}`}>
       <div className="source-header">
         <h3>{source.name}</h3>
         <a href={source.url} target="_blank" rel="noopener noreferrer" className="source-link">
@@ -370,6 +370,37 @@ function SourceCard({ source }: { source: DataSource }) {
 }
 
 export default function SourcesTab() {
+  const [highlightedSource, setHighlightedSource] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      // Handle both #source-{id} and #sources-{id} formats
+      let sourceId: string | null = null;
+      if (hash.startsWith('#sources-')) {
+        sourceId = hash.replace('#sources-', '');
+      } else if (hash.startsWith('#source-')) {
+        sourceId = hash.replace('#source-', '');
+      }
+
+      if (sourceId) {
+        setHighlightedSource(sourceId);
+        // Scroll to the source card
+        const element = document.getElementById(`source-${sourceId}`);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        // Remove highlight after 3 seconds
+        setTimeout(() => setHighlightedSource(null), 3000);
+      }
+    };
+
+    // Check on mount
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   return (
     <div className="sources-tab">
       <div className="sources-intro">
@@ -401,7 +432,7 @@ export default function SourcesTab() {
 
       <div className="sources-grid">
         {DATA_SOURCES.map((source) => (
-          <SourceCard key={source.id} source={source} />
+          <SourceCard key={source.id} source={source} highlighted={highlightedSource === source.id} />
         ))}
       </div>
 

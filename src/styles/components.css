@@ -764,6 +764,17 @@ html, body, #root {
   border-color: var(--color-accent);
 }
 
+.source-card.highlighted {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  animation: highlight-pulse 1s ease-in-out 3;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.5); }
+}
+
 .source-header {
   display: flex;
   justify-content: space-between;
