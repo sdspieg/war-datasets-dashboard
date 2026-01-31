@@ -46,6 +46,8 @@ const darkLayout = {
   legend: {
     bgcolor: 'transparent',
     font: { color: '#fff', size: 10 },
+    itemclick: 'toggleothers' as const,
+    itemdoubleclick: 'toggle' as const,
   },
   hoverlabel: {
     bgcolor: '#1a1a2e',

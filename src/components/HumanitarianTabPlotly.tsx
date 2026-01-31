@@ -55,6 +55,8 @@ const darkLayout = {
   legend: {
     bgcolor: 'transparent',
     font: { color: '#fff', size: 10 },
+    itemclick: 'toggleothers' as const,
+    itemdoubleclick: 'toggle' as const,
   },
   hoverlabel: {
     bgcolor: '#1a1a2e',
@@ -163,14 +165,16 @@ export default function HumanitarianTabPlotly() {
 
   const latestIdps = idpsTotal[idpsTotal.length - 1];
 
-  // Format funding data
-  const fundingData = funding.map(f => ({
-    date: f.date,
-    requirements: f.requirements_usd / 1e9,
-    funded: f.funding_usd / 1e9,
-    gap: (f.requirements_usd - f.funding_usd) / 1e9,
-    pct: f.funding_pct,
-  }));
+  // Format funding data - filter out entries without requirements
+  const fundingData = funding
+    .filter(f => f.requirements_usd && f.requirements_usd > 0)
+    .map(f => ({
+      date: f.date,
+      requirements: f.requirements_usd / 1e9,
+      funded: f.funding_usd / 1e9,
+      gap: (f.requirements_usd - f.funding_usd) / 1e9,
+      pct: f.funding_pct,
+    }));
 
   return (
     <div className="humanitarian-tab">

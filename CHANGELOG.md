@@ -1,5 +1,19 @@
 # Ukraine War Data Dashboard - Development Changelog
 
+## Repository Information
+
+**Local Repository Path:** `/tmp/dashboard-build`
+
+**Git Commits (2026-01-31):**
+1. `ce10d60` - Initial commit: Ukraine War Data Dashboard with Plotly charts
+2. `01d7496` - Migrate all tabs to Plotly.js for native drag-to-zoom
+
+**GitHub:** Not yet configured - needs `git remote add origin <url>` and `git push`
+
+**Dev Server:** `http://localhost:3000/war-datasets-dashboard/`
+
+---
+
 ## 2026-01-31 - Plotly Migration and Enhanced Interactivity
 
 ### Changed
@@ -28,6 +42,8 @@
 - Added `SOURCE_ID_MAP` pattern for mapping display names to element IDs
 - Implemented hash-based deep linking with 150ms delay for React render timing
 - Added `@keyframes source-pulse` animation for source card highlighting
+- **Legend click behavior**: `itemclick: 'toggleothers'` - click to isolate one series, double-click to toggle
+- Fixed funding gap chart to filter out records with null requirements
 
 ---
 

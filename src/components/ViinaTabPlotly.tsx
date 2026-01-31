@@ -69,6 +69,36 @@ const SourceLink = ({ source }: { source: string }) => {
   );
 };
 
+// Plotly dark theme layout base
+const darkLayout = {
+  paper_bgcolor: 'transparent',
+  plot_bgcolor: 'transparent',
+  font: { color: '#b0b0b0', size: 11 },
+  margin: { l: 60, r: 20, t: 40, b: 80 },
+  xaxis: {
+    gridcolor: '#333',
+    linecolor: '#333',
+    tickangle: -45,
+  },
+  yaxis: {
+    gridcolor: '#333',
+    linecolor: '#333',
+  },
+  legend: {
+    bgcolor: 'transparent',
+    font: { color: '#fff', size: 10 },
+    itemclick: 'toggleothers' as const,
+    itemdoubleclick: 'toggle' as const,
+  },
+  hoverlabel: {
+    bgcolor: '#1a1a2e',
+    bordercolor: '#333',
+    font: { color: '#fff', size: 12 },
+  },
+  dragmode: 'zoom' as const,
+  hovermode: 'x unified' as const,
+};
+
 export default function ViinaTabPlotly() {
   const [daily, setDaily] = useState<ViinaDaily[]>([]);
   const [weekly, setWeekly] = useState<ViinaWeekly[]>([]);
