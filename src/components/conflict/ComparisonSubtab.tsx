@@ -283,26 +283,26 @@ export default function ComparisonSubtab() {
         </div>
       </div>
 
-      {/* Side-by-side Time Series */}
+      {/* Stacked Bar Time Series */}
       <div className="chart-card">
         <h3>Daily Events Comparison {normalizeView && '(Normalized to 0-100)'}</h3>
         <p className="chart-note">
           {normalizeView
             ? 'Each dataset scaled relative to its own maximum (100 = peak day)'
-            : 'Absolute event counts per day. Drag to zoom.'}
+            : 'Stacked bar view of daily event counts. Drag to zoom.'}
         </p>
         <Plot
           data={selectedDatasetsList.map(ds => ({
             x: mergedData.dates,
             y: displayData.map(d => d[ds]),
-            type: 'scatter' as const,
-            mode: 'lines' as const,
+            type: 'bar' as const,
             name: DATASET_LABELS[ds],
-            line: { color: DATASET_COLORS[ds], width: 1.5 },
+            marker: { color: DATASET_COLORS[ds] },
             hoverlabel: { font: { color: '#fff' } },
           }))}
           layout={{
             ...darkLayout,
+            barmode: 'stack',
             height: 400,
             xaxis: {
               ...darkLayout.xaxis,
@@ -432,7 +432,7 @@ export default function ComparisonSubtab() {
           })()}
           layout={{
             ...darkLayout,
-            barmode: 'group',
+            barmode: 'stack',
             height: 400,
             xaxis: {
               ...darkLayout.xaxis,

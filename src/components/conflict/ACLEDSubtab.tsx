@@ -176,31 +176,28 @@ export default function ACLEDSubtab({ selectedTypes }: ACLEDSubtabProps) {
         </div>
       ) : (
         <>
-          {/* Monthly Events Timeline */}
+          {/* Monthly Events by Type - Stacked Bar (PRIMARY) */}
           <div className="chart-card">
-            <h3>Monthly Events Over Time <SourceLink source="ACLED" /></h3>
-            <p className="chart-note">Filtered by selected event types. Drag to zoom.</p>
+            <h3>Monthly Events by Type <SourceLink source="ACLED" /></h3>
+            <p className="chart-note">Stacked bars show event type breakdown. Drag to zoom. Click legend to toggle.</p>
             <Plot
-              data={[
-                {
-                  x: monthlyTotals.map(d => d.month),
-                  y: monthlyTotals.map(d => d.total),
-                  type: 'scatter' as const,
-                  mode: 'lines' as const,
-                  name: 'Events',
-                  line: { color: '#ef4444', width: 2 },
-                  fill: 'tozeroy',
-                  fillcolor: 'rgba(239, 68, 68, 0.2)',
-                  hoverlabel: { font: { color: '#fff' } },
-                },
-              ]}
+              data={visibleEventTypes.map((type, i) => ({
+                x: months,
+                y: monthlyChartData.map(d => (d[type] as number) || 0),
+                type: 'bar' as const,
+                name: type,
+                marker: { color: EVENT_TYPE_COLORS[type] || PLOTLY_COLORS[i % PLOTLY_COLORS.length] },
+                hoverlabel: { font: { color: '#fff' } },
+              }))}
               layout={{
                 ...darkLayout,
-                height: 300,
+                barmode: 'stack',
+                height: 400,
                 xaxis: {
                   ...darkLayout.xaxis,
                   rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
                 },
+                legend: { ...darkLayout.legend, orientation: 'h' as const, y: 1.1 },
               }}
               config={plotConfig}
               style={{ width: '100%' }}
@@ -267,34 +264,6 @@ export default function ACLEDSubtab({ selectedTypes }: ACLEDSubtabProps) {
                 style={{ width: '100%' }}
               />
             </div>
-          </div>
-
-          {/* Monthly Events by Type - Stacked Bar */}
-          <div className="chart-card">
-            <h3>Monthly Events by Type <SourceLink source="ACLED" /></h3>
-            <p className="chart-note">Drag on chart to zoom. Click legend to toggle event types.</p>
-            <Plot
-              data={visibleEventTypes.map((type, i) => ({
-                x: months,
-                y: monthlyChartData.map(d => (d[type] as number) || 0),
-                type: 'bar' as const,
-                name: type,
-                marker: { color: EVENT_TYPE_COLORS[type] || PLOTLY_COLORS[i % PLOTLY_COLORS.length] },
-                hoverlabel: { font: { color: '#fff' } },
-              }))}
-              layout={{
-                ...darkLayout,
-                barmode: 'stack',
-                height: 400,
-                xaxis: {
-                  ...darkLayout.xaxis,
-                  rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
-                },
-                legend: { ...darkLayout.legend, orientation: 'h' as const, y: -0.25 },
-              }}
-              config={plotConfig}
-              style={{ width: '100%' }}
-            />
           </div>
         </>
       )}

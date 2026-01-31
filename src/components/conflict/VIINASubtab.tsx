@@ -244,38 +244,7 @@ export default function VIINASubtab({ selectedSources }: VIINASubtabProps) {
         </div>
       ) : (
         <>
-          {/* Filtered events timeline */}
-          <div className="chart-card">
-            <h3>Events Over Time (Filtered) <SourceLink source="VIINA" /></h3>
-            <p className="chart-note">Showing events from {selectedSources.size} selected source(s).</p>
-            <Plot
-              data={[
-                {
-                  x: timelineTotals.map(d => d.date),
-                  y: timelineTotals.map(d => d.total),
-                  type: 'scatter' as const,
-                  mode: 'lines' as const,
-                  name: 'Events',
-                  line: { color: '#22c55e', width: 1.5 },
-                  fill: 'tozeroy',
-                  fillcolor: 'rgba(34, 197, 94, 0.2)',
-                  hoverlabel: { font: { color: '#fff' } },
-                },
-              ]}
-              layout={{
-                ...darkLayout,
-                height: 300,
-                xaxis: {
-                  ...darkLayout.xaxis,
-                  rangeslider: { visible: true, thickness: 0.08, bgcolor: '#1a1a2e', bordercolor: '#333' },
-                },
-              }}
-              config={plotConfig}
-              style={{ width: '100%' }}
-            />
-          </div>
-
-          {/* Stacked bar chart with time unit picker */}
+          {/* Stacked bar chart with time unit picker (PRIMARY) */}
           <div className="chart-card">
             <div className="chart-header-with-controls">
               <h3>Events by Source Over Time <SourceLink source="VIINA" /></h3>
@@ -289,7 +258,7 @@ export default function VIINASubtab({ selectedSources }: VIINASubtabProps) {
               </div>
             </div>
             <p className="chart-note">
-              Drag on chart to zoom. Double-click to reset. Click legend to toggle sources.
+              Stacked bars show source breakdown. Drag to zoom. Click legend to toggle sources.
             </p>
             <Plot
               data={stackedData.bySource.map((s, i) => ({
@@ -311,7 +280,7 @@ export default function VIINASubtab({ selectedSources }: VIINASubtabProps) {
                 legend: {
                   ...darkLayout.legend,
                   orientation: 'h' as const,
-                  y: -0.3,
+                  y: 1.12,
                 },
               }}
               config={plotConfig}
