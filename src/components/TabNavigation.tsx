@@ -3,9 +3,7 @@ import type { TabId } from '../types';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'overview', label: 'Overview' },
-  { id: 'conflict', label: 'ACLED/UCDP' },
-  { id: 'viina', label: 'VIINA' },
-  { id: 'bellingcat', label: 'Bellingcat' },
+  { id: 'conflict', label: 'Conflict Events' },
   { id: 'aerial', label: 'Aerial Assaults' },
   { id: 'equipment', label: 'Equipment' },
   { id: 'humanitarian', label: 'Humanitarian' },

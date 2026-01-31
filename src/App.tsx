@@ -13,9 +13,7 @@ import EventScatterChart from './components/charts/EventScatterChart';
 import MetricDecomposition from './components/charts/MetricDecomposition';
 import SourcesTab from './components/SourcesTab';
 import OverviewTab from './components/OverviewTab';
-import ConflictEventsTabPlotly from './components/ConflictEventsTabPlotly';
-import ViinaTabPlotly from './components/ViinaTabPlotly';
-import BellingcatTabPlotly from './components/BellingcatTabPlotly';
+import UnifiedConflictEventsTab from './components/UnifiedConflictEventsTab';
 import AerialAssaultsTabPlotly from './components/AerialAssaultsTabPlotly';
 import EquipmentTabPlotly from './components/EquipmentTabPlotly';
 import HumanitarianTabPlotly from './components/HumanitarianTabPlotly';
@@ -112,11 +110,11 @@ function DashboardContent() {
     setTerritoryDates(dates);
   }, [dailyAreas, metadata]);
 
-  // URL hash sync with support for deep linking to sources (e.g., #sources-viina)
+  // URL hash sync with support for deep linking to sources (e.g., #sources-viina) and conflict subtabs (e.g., #conflict-viina)
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1);
-      const validTabs = ['overview', 'conflict', 'viina', 'bellingcat', 'aerial', 'equipment', 'humanitarian', 'territory', 'events', 'map', 'sources'];
+      const validTabs = ['overview', 'conflict', 'aerial', 'equipment', 'humanitarian', 'territory', 'events', 'map', 'sources'];
 
       // Check for deep link to specific source (format: #sources-{sourceId})
       if (hash.startsWith('sources-')) {
@@ -131,6 +129,9 @@ function DashboardContent() {
             setTimeout(() => el.classList.remove('source-highlight'), 3000);
           }
         }, 150);
+      } else if (hash.startsWith('conflict-')) {
+        // Deep link to conflict subtab (handled by UnifiedConflictEventsTab)
+        dispatch({ type: 'SET_TAB', payload: 'conflict' as any });
       } else if (validTabs.includes(hash)) {
         dispatch({ type: 'SET_TAB', payload: hash as any });
       }
@@ -182,19 +183,7 @@ function DashboardContent() {
 
       {state.activeTab === 'conflict' && (
         <ChartErrorBoundary name="Conflict Events">
-          <ConflictEventsTabPlotly />
-        </ChartErrorBoundary>
-      )}
-
-      {state.activeTab === 'viina' && (
-        <ChartErrorBoundary name="VIINA Events">
-          <ViinaTabPlotly />
-        </ChartErrorBoundary>
-      )}
-
-      {state.activeTab === 'bellingcat' && (
-        <ChartErrorBoundary name="Bellingcat">
-          <BellingcatTabPlotly />
+          <UnifiedConflictEventsTab />
         </ChartErrorBoundary>
       )}
 

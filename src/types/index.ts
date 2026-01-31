@@ -52,7 +52,64 @@ export interface DashboardMetadata {
   exportTimestamp: string;
 }
 
-export type TabId = 'overview' | 'conflict' | 'viina' | 'bellingcat' | 'aerial' | 'equipment' | 'humanitarian' | 'territory' | 'events' | 'map' | 'sources';
+export type TabId = 'overview' | 'conflict' | 'aerial' | 'equipment' | 'humanitarian' | 'territory' | 'events' | 'map' | 'sources';
+
+export type ConflictSubtab = 'acled' | 'ucdp' | 'viina' | 'bellingcat' | 'comparison';
+
+// Event type constants for filtering
+export const ACLED_EVENT_TYPES = [
+  'Battles',
+  'Explosions/Remote violence',
+  'Protests',
+  'Riots',
+  'Strategic developments',
+  'Violence against civilians',
+] as const;
+
+export const UCDP_VIOLENCE_TYPES = [
+  { id: 1, label: 'State-based' },
+  { id: 2, label: 'Non-state' },
+  { id: 3, label: 'One-sided' },
+] as const;
+
+export const VIINA_EVENT_CATEGORIES = [
+  'airstrike',
+  'artillery',
+  'UAV',
+  'firefight',
+  'control',
+  'raid',
+  'armor',
+  'IED',
+  'arrest',
+  'hospital',
+  'milcas',
+  'civcas',
+  'retreat',
+  'property',
+  'cyber',
+] as const;
+
+export const BELLINGCAT_IMPACT_TYPES = [
+  'Residential',
+  'Healthcare',
+  'Military',
+  'Industrial',
+  'Commercial',
+  'Cultural',
+  'Religious',
+  'School/childcare',
+  'Roads/Transport',
+  'Administrative',
+  'Food Infrastructure',
+  'Humanitarian',
+  'Undefined',
+] as const;
+
+export type ACLEDEventType = typeof ACLED_EVENT_TYPES[number];
+export type UCDPViolenceType = typeof UCDP_VIOLENCE_TYPES[number];
+export type ViinaEventCategory = typeof VIINA_EVENT_CATEGORIES[number];
+export type BellingcatImpactType = typeof BELLINGCAT_IMPACT_TYPES[number];
 
 // New data types for additional visualizations
 export interface OverviewStats {

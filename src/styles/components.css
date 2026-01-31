@@ -1453,6 +1453,349 @@ html, body, #root {
   font-size: 12px !important;
 }
 
+/* ========================================
+   Unified Conflict Events Tab
+   ======================================== */
+
+.unified-conflict-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Subtab Navigation */
+.subtab-nav {
+  display: flex;
+  gap: 0;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.subtab-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 12px 16px;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.subtab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.subtab-btn.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.subtab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Conflict Layout with Left Sidebar */
+.conflict-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.conflict-layout.with-sidebar {
+  gap: 0;
+}
+
+.conflict-sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--bg-card);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.conflict-sidebar .sidebar-section {
+  padding: 16px;
+}
+
+.conflict-sidebar .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.conflict-sidebar .sidebar-header h3 {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.conflict-sidebar .sidebar-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.conflict-sidebar .sidebar-actions button {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.conflict-sidebar .sidebar-actions button:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.conflict-sidebar .sidebar-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.filter-item:hover {
+  background: var(--bg-hover);
+}
+
+.filter-item input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+}
+
+.filter-item .filter-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+.filter-item:hover .filter-label {
+  color: var(--text-primary);
+}
+
+.no-filters-msg {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.no-data-msg {
+  font-size: 14px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 40px 20px;
+}
+
+/* Conflict Subtab Base */
+.conflict-subtab {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.conflict-subtab h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+/* Conflict Stats Row */
+.conflict-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+/* Event Type Filter Panel */
+.event-filter-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-action-btn {
+  background: none;
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-action-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.filter-action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Filter Chips */
+.filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-chip {
+  background: var(--bg-primary);
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-chip:hover {
+  border-color: var(--color-accent);
+  color: var(--text-primary);
+}
+
+.filter-chip.selected {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+/* Comparison Tab Controls */
+.comparison-controls {
+  background: var(--bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.dataset-selector,
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+
+.dataset-chip {
+  background: var(--bg-primary);
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dataset-chip:hover {
+  border-color: var(--text-muted);
+}
+
+.dataset-chip.selected {
+  color: #fff;
+}
+
+.view-btn {
+  background: var(--bg-primary);
+  border: 1px solid var(--color-border);
+  color: var(--text-secondary);
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-btn:hover {
+  border-color: var(--color-accent);
+}
+
+.view-btn.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+/* Coverage Table in Comparison */
+.coverage-table-container {
+  overflow-x: auto;
+}
+
+.coverage-table-container .coverage-table {
+  min-width: 300px;
+}
+
+.coverage-table-container .coverage-table td:first-child {
+  font-weight: 600;
+}
+
 .js-plotly-plot .hoverlayer .hovertext .name {
   fill: #fff !important;
   font-size: 12px !important;
