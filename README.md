@@ -19,18 +19,37 @@ Interactive React dashboard visualizing Russian-controlled territory in Ukraine,
 | `main` | Source code (Plotly version with all features) |
 | `gh-pages` | Built `dist/` folder (auto-deployed to GitHub Pages) |
 
-### Google Drive Limitations
+### Google Drive Limitations & Workarounds
 
-Google Drive doesn't support symlinks, so `node_modules` cannot be installed directly there. Workaround:
+Google Drive (mounted via rclone/FUSE) has several limitations:
+
+| Operation | Works? | Notes |
+|-----------|--------|-------|
+| `npm install` | **NO** | Symlinks not supported |
+| `cp -r` (many small files) | **SLOW** | Thousands of files = hours |
+| `rsync` | **NO** | Temp files fail with "Operation not permitted" |
+| `tar` copy + extract | **YES** | Single file transfer, then extract |
+| `git clone` | **NO** | Use worktree pattern instead |
+| File timestamps | **NO** | "Cannot utime" warnings (harmless) |
+
+**Recommended workflow:**
 
 ```bash
-# Install in /tmp, then copy
+# 1. Work in /tmp or C:\Apps (fast local storage)
 cd /tmp/dashboard-build
 npm install
-cp -r node_modules "/mnt/g/My Drive/RuBase/Red lines/Datasets/dashboard/"
+npm run build
+
+# 2. Sync to Google Drive using tar (excludes node_modules)
+tar --exclude='node_modules' --exclude='.git' -cvf /tmp/dashboard.tar .
+cp /tmp/dashboard.tar "/mnt/g/My Drive/RuBase/Red lines/Datasets/"
+cd "/mnt/g/My Drive/RuBase/Red lines/Datasets/" && tar -xvf dashboard.tar -C dashboard/
+
+# 3. If you need node_modules on Google Drive (slow but works)
+cp -r /tmp/dashboard-build/node_modules "/mnt/g/.../dashboard/"  # Takes 30+ min
 ```
 
-For faster development, work in `/tmp/dashboard-build` or `C:\Apps\dashboard-build` and sync to Google Drive when done.
+**Note:** The `.cache/gh-pages/` folder inside node_modules is just deployment cache - not needed. All actual data is in `public/data/`.
 
 ## Architecture
 
