@@ -1,0 +1,47 @@
+:root {
+  /* Background */
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-card: #1e2a45;
+  --bg-sidebar: #0f1629;
+  --bg-hover: #253555;
+
+  /* Text */
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a0b0;
+  --text-muted: #6a6a7a;
+
+  /* Chart palette (matching matplotlib figures) */
+  --color-territory: #2ca02c;
+  --color-territory-fill: rgba(44, 160, 44, 0.3);
+  --color-russian-gains: #d62728;
+  --color-ukrainian-gains: #1f77b4;
+  --color-trend: #d62728;
+  --color-kursk: #ff7f0e;
+  --color-kursk-fill: rgba(255, 127, 14, 0.3);
+
+  /* Event importance colors */
+  --color-event-critical: #d62728;
+  --color-event-significant: #ff7f0e;
+  --color-event-moderate: #bcbd22;
+  --color-event-minor: #7f7f7f;
+
+  /* Metric colors */
+  --color-territorial: #2ca02c;
+  --color-strategic: #1f77b4;
+  --color-cascade: #ff7f0e;
+
+  /* UI */
+  --color-accent: #4fc3f7;
+  --color-border: #2a3a5a;
+  --color-scrollbar: #3a4a6a;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.3);
+
+  /* Layout */
+  --sidebar-width: 280px;
+  --header-height: 56px;
+  --tab-height: 44px;
+}
