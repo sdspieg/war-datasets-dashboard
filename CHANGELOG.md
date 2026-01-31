@@ -37,15 +37,21 @@
 
 ## Repository Information
 
-**Local Repository Path:** `/tmp/dashboard-build`
+| Location | Path / URL |
+|----------|------------|
+| **GitHub** | https://github.com/sdspieg/war-datasets-dashboard.git |
+| **Live Site** | https://sdspieg.github.io/war-datasets-dashboard/ |
+| **Working Dir** | `/tmp/dashboard-build` |
+| **Backup** | `C:\Apps\dashboard-build` |
+| **Google Drive** | `G:\My Drive\RuBase\Red lines\Datasets\dashboard` |
 
-**Git Commits (2026-01-31):**
-1. `ce10d60` - Initial commit: Ukraine War Data Dashboard with Plotly charts
-2. `01d7496` - Migrate all tabs to Plotly.js for native drag-to-zoom
-
-**GitHub:** Not yet configured - needs `git remote add origin <url>` and `git push`
+**Git Branches:**
+- `main` — Full source code (Plotly version)
+- `gh-pages` — Built `dist/` folder (deployed to GitHub Pages)
 
 **Dev Server:** `http://localhost:3000/war-datasets-dashboard/`
+
+**Last deployed to gh-pages:** 2026-01-31 22:31:27 +0100
 
 ---
 

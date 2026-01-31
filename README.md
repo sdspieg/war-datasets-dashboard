@@ -2,6 +2,36 @@
 
 Interactive React dashboard visualizing Russian-controlled territory in Ukraine, military events, and Kursk region dynamics from ISW (Institute for the Study of War) assessment data stored in PostGIS.
 
+## Repository & Deployment
+
+| Location | Path / URL |
+|----------|------------|
+| **GitHub** | https://github.com/sdspieg/war-datasets-dashboard.git |
+| **Live Site** | https://sdspieg.github.io/war-datasets-dashboard/ |
+| **Working Dir** | `/tmp/dashboard-build` (for builds) |
+| **Backup** | `C:\Apps\dashboard-build` (local hard drive) |
+| **Google Drive** | `G:\My Drive\RuBase\Red lines\Datasets\dashboard` |
+
+### Git Branches
+
+| Branch | Contents |
+|--------|----------|
+| `main` | Source code (Plotly version with all features) |
+| `gh-pages` | Built `dist/` folder (auto-deployed to GitHub Pages) |
+
+### Google Drive Limitations
+
+Google Drive doesn't support symlinks, so `node_modules` cannot be installed directly there. Workaround:
+
+```bash
+# Install in /tmp, then copy
+cd /tmp/dashboard-build
+npm install
+cp -r node_modules "/mnt/g/My Drive/RuBase/Red lines/Datasets/dashboard/"
+```
+
+For faster development, work in `/tmp/dashboard-build` or `C:\Apps\dashboard-build` and sync to Google Drive when done.
+
 ## Architecture
 
 ```
@@ -59,11 +89,13 @@ dashboard/
 | Layer        | Technology                                      |
 |--------------|--------------------------------------------------|
 | Framework    | Vite + React 18 + TypeScript                    |
-| Charts       | Recharts (7 charts) + Nivo (heatmap, radar)     |
+| Charts       | **Plotly.js** (drag-to-zoom) + Nivo (heatmap, radar) |
 | Map          | React-Leaflet + Leaflet + CARTO dark basemap    |
 | State        | React Context + useReducer                       |
 | Styling      | CSS custom properties, dark theme                |
 | Data         | Static JSON/GeoJSON (no backend server needed)   |
+
+> **Note:** Originally built with Recharts, migrated to Plotly.js on 2026-01-31 for native drag-to-zoom functionality.
 
 ## Prerequisites
 
