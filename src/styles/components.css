@@ -434,6 +434,14 @@ html, body, #root {
   font-size: 11px;
 }
 
+/* Force all recharts tooltip text to be readable */
+.recharts-tooltip-wrapper .recharts-tooltip-item,
+.recharts-tooltip-wrapper .recharts-tooltip-item-name,
+.recharts-tooltip-wrapper .recharts-tooltip-item-value,
+.recharts-tooltip-wrapper .recharts-tooltip-item-separator {
+  color: #fff !important;
+}
+
 /* Custom tooltip */
 .custom-tooltip {
   background: var(--bg-card);
@@ -1422,4 +1430,70 @@ html, body, #root {
 .time-unit-picker select:focus {
   outline: none;
   border-color: var(--color-accent);
+}
+
+/* ========================================
+   Plotly Tooltip Styling
+   ======================================== */
+
+/* Plotly hover labels - dark theme */
+.js-plotly-plot .hoverlayer .hovertext {
+  fill-opacity: 1 !important;
+}
+
+.js-plotly-plot .hoverlayer .hovertext rect {
+  fill: var(--bg-card, #1a1a2e) !important;
+  stroke: var(--color-border, #333) !important;
+  rx: 4px;
+  ry: 4px;
+}
+
+.js-plotly-plot .hoverlayer .hovertext .nums {
+  fill: #fff !important;
+  font-size: 12px !important;
+}
+
+.js-plotly-plot .hoverlayer .hovertext .name {
+  fill: #fff !important;
+  font-size: 12px !important;
+}
+
+/* Unified hover label styling */
+.js-plotly-plot .hoverlayer .legend text {
+  fill: #fff !important;
+}
+
+/* Plotly modebar styling for dark theme */
+.js-plotly-plot .modebar {
+  background: transparent !important;
+}
+
+.js-plotly-plot .modebar-btn path {
+  fill: var(--text-secondary, #888) !important;
+}
+
+.js-plotly-plot .modebar-btn:hover path {
+  fill: var(--text-primary, #fff) !important;
+}
+
+.js-plotly-plot .modebar-btn.active path {
+  fill: var(--color-accent, #22c55e) !important;
+}
+
+/* Source card highlight animation for deep linking */
+.source-card.source-highlight {
+  animation: source-pulse 0.6s ease-in-out 3;
+  border-color: #f97316 !important;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.4), 0 0 20px rgba(249, 115, 22, 0.3);
+}
+
+@keyframes source-pulse {
+  0%, 100% {
+    border-color: #f97316;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.4), 0 0 10px rgba(249, 115, 22, 0.2);
+  }
+  50% {
+    border-color: #fb923c;
+    box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.6), 0 0 30px rgba(249, 115, 22, 0.4);
+  }
 }

@@ -311,7 +311,7 @@ const DATA_SOURCES: DataSource[] = [
 
 function SourceCard({ source }: { source: DataSource }) {
   return (
-    <div className="source-card">
+    <div className="source-card" id={`source-${source.id}`}>
       <div className="source-header">
         <h3>{source.name}</h3>
         <a href={source.url} target="_blank" rel="noopener noreferrer" className="source-link">

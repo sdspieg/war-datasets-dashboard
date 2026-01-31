@@ -13,12 +13,12 @@ import EventScatterChart from './components/charts/EventScatterChart';
 import MetricDecomposition from './components/charts/MetricDecomposition';
 import SourcesTab from './components/SourcesTab';
 import OverviewTab from './components/OverviewTab';
-import ConflictEventsTab from './components/ConflictEventsTab';
-import ViinaTab from './components/ViinaTab';
-import BellingcatTab from './components/BellingcatTab';
-import AerialAssaultsTab from './components/AerialAssaultsTab';
-import EquipmentTab from './components/EquipmentTab';
-import HumanitarianTab from './components/HumanitarianTab';
+import ConflictEventsTabPlotly from './components/ConflictEventsTabPlotly';
+import ViinaTabPlotly from './components/ViinaTabPlotly';
+import BellingcatTabPlotly from './components/BellingcatTabPlotly';
+import AerialAssaultsTabPlotly from './components/AerialAssaultsTabPlotly';
+import EquipmentTabPlotly from './components/EquipmentTabPlotly';
+import HumanitarianTabPlotly from './components/HumanitarianTabPlotly';
 import type { DailyArea, MilitaryEvent, DashboardMetadata } from './types';
 
 // Lazy-load the map to avoid SSR issues with Leaflet
@@ -112,17 +112,40 @@ function DashboardContent() {
     setTerritoryDates(dates);
   }, [dailyAreas, metadata]);
 
-  // URL hash sync
+  // URL hash sync with support for deep linking to sources (e.g., #sources-viina)
   useEffect(() => {
-    const hash = window.location.hash.substring(1);
-    const validTabs = ['overview', 'conflict', 'viina', 'bellingcat', 'aerial', 'equipment', 'humanitarian', 'territory', 'events', 'map', 'sources'];
-    if (validTabs.includes(hash)) {
-      dispatch({ type: 'SET_TAB', payload: hash as any });
-    }
+    const handleHashChange = () => {
+      const hash = window.location.hash.substring(1);
+      const validTabs = ['overview', 'conflict', 'viina', 'bellingcat', 'aerial', 'equipment', 'humanitarian', 'territory', 'events', 'map', 'sources'];
+
+      // Check for deep link to specific source (format: #sources-{sourceId})
+      if (hash.startsWith('sources-')) {
+        const sourceId = hash.substring(8); // Remove 'sources-' prefix
+        dispatch({ type: 'SET_TAB', payload: 'sources' as any });
+        // Wait for tab to render, then scroll to source
+        setTimeout(() => {
+          const el = document.getElementById(`source-${sourceId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('source-highlight');
+            setTimeout(() => el.classList.remove('source-highlight'), 3000);
+          }
+        }, 150);
+      } else if (validTabs.includes(hash)) {
+        dispatch({ type: 'SET_TAB', payload: hash as any });
+      }
+    };
+
+    handleHashChange(); // Handle initial load
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, [dispatch]);
 
   useEffect(() => {
-    window.location.hash = state.activeTab;
+    // Only update hash for simple tab switches (not deep links)
+    if (!window.location.hash.includes('-')) {
+      window.location.hash = state.activeTab;
+    }
   }, [state.activeTab]);
 
   // Loading state
@@ -159,37 +182,37 @@ function DashboardContent() {
 
       {state.activeTab === 'conflict' && (
         <ChartErrorBoundary name="Conflict Events">
-          <ConflictEventsTab />
+          <ConflictEventsTabPlotly />
         </ChartErrorBoundary>
       )}
 
       {state.activeTab === 'viina' && (
         <ChartErrorBoundary name="VIINA Events">
-          <ViinaTab />
+          <ViinaTabPlotly />
         </ChartErrorBoundary>
       )}
 
       {state.activeTab === 'bellingcat' && (
         <ChartErrorBoundary name="Bellingcat">
-          <BellingcatTab />
+          <BellingcatTabPlotly />
         </ChartErrorBoundary>
       )}
 
       {state.activeTab === 'aerial' && (
         <ChartErrorBoundary name="Aerial Assaults">
-          <AerialAssaultsTab />
+          <AerialAssaultsTabPlotly />
         </ChartErrorBoundary>
       )}
 
       {state.activeTab === 'equipment' && (
         <ChartErrorBoundary name="Equipment">
-          <EquipmentTab />
+          <EquipmentTabPlotly />
         </ChartErrorBoundary>
       )}
 
       {state.activeTab === 'humanitarian' && (
         <ChartErrorBoundary name="Humanitarian">
-          <HumanitarianTab />
+          <HumanitarianTabPlotly />
         </ChartErrorBoundary>
       )}
 
