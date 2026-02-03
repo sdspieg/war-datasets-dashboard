@@ -4,6 +4,7 @@ import {
   Tooltip, ResponsiveContainer, Legend,
 } from 'recharts';
 import { useDashboard } from '../../context/DashboardContext';
+import { ImpactScoresInfo } from '../InfoModal';
 import type { MilitaryEvent } from '../../types';
 
 interface Props {
@@ -50,7 +51,7 @@ export default function MetricDecomposition({ events }: Props) {
 
   return (
     <div className="chart-card">
-      <h2>Event Metric Decomposition</h2>
+      <h2>Event Metric Decomposition <ImpactScoresInfo /></h2>
       <p className="subtitle">Stacked T/S/C scores per event, sorted by importance</p>
       <ResponsiveContainer width="100%" height={Math.max(350, chartData.length * 24 + 80)}>
         <BarChart

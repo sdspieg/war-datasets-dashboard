@@ -131,3 +131,48 @@ export function DualPaneInfo() {
     </InfoModal>
   );
 }
+
+export function ImpactScoresInfo() {
+  return (
+    <InfoModal title="Understanding Impact Scores">
+      <p>
+        Each military event is scored on three dimensions to capture its significance:
+      </p>
+      <h4>Strategic Score (0-4)</h4>
+      <p>
+        Measures the event's impact on long-term military objectives and overall war strategy.
+      </p>
+      <ul>
+        <li><strong>4</strong> - Major strategic shift (e.g., loss of key command center, major supply route severed)</li>
+        <li><strong>3</strong> - Significant strategic impact (e.g., major infrastructure destroyed)</li>
+        <li><strong>2</strong> - Moderate strategic value (e.g., important asset captured)</li>
+        <li><strong>1</strong> - Minor strategic relevance</li>
+        <li><strong>0</strong> - No strategic significance</li>
+      </ul>
+      <h4>Territorial Score (0-4)</h4>
+      <p>
+        Measures the event's impact on control of physical territory and front-line positions.
+      </p>
+      <ul>
+        <li><strong>4</strong> - Major territorial change (e.g., city captured/liberated)</li>
+        <li><strong>3</strong> - Significant area gained/lost (e.g., multiple settlements)</li>
+        <li><strong>2</strong> - Moderate territorial shift (e.g., village or key position)</li>
+        <li><strong>1</strong> - Minor front-line adjustment</li>
+        <li><strong>0</strong> - No territorial change</li>
+      </ul>
+      <h4>Cascade Score</h4>
+      <p>
+        Estimates the potential for follow-on effects - how likely this event is to trigger
+        additional military actions, defensive responses, or changes in operational tempo.
+        Higher values indicate events likely to cause ripple effects.
+      </p>
+      <h4>Why These Matter</h4>
+      <p className="info-note">
+        <em>Events with high strategic but low territorial scores (top-left of scatter plot) represent
+        actions like deep strikes or infrastructure attacks. Events with high territorial but low strategic
+        scores (bottom-right) represent front-line advances without broader implications.
+        Events high in both are the most consequential.</em>
+      </p>
+    </InfoModal>
+  );
+}

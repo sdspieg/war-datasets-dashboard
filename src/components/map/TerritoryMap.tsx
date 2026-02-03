@@ -28,6 +28,14 @@ export default function TerritoryMap({ dailyAreas, availableDates }: Props) {
     return d >= startStr && d <= endStr;
   });
 
+  // Reset currentDate when it falls outside the filtered range
+  useEffect(() => {
+    if (filteredDates.length > 0 && !filteredDates.includes(currentDate)) {
+      setCurrentDate(filteredDates[0]);
+      setPlaying(false);
+    }
+  }, [filteredDates, currentDate]);
+
   // Load GeoJSON when date changes
   useEffect(() => {
     if (!currentDate) return;
