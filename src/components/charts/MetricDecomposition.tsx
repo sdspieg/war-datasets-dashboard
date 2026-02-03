@@ -51,7 +51,10 @@ export default function MetricDecomposition({ events }: Props) {
 
   return (
     <div className="chart-card">
-      <h2>Event Metric Decomposition <ImpactScoresInfo /></h2>
+      <div className="chart-card-header">
+        <h2>Event Metric Decomposition</h2>
+        <ImpactScoresInfo />
+      </div>
       <p className="subtitle">Stacked T/S/C scores per event, sorted by importance</p>
       <ResponsiveContainer width="100%" height={Math.max(350, chartData.length * 24 + 80)}>
         <BarChart

@@ -37,7 +37,10 @@ export default function EventScatterChart({ events }: Props) {
 
   return (
     <div className="chart-card">
-      <h2>Strategic vs Territorial Impact <ImpactScoresInfo /></h2>
+      <div className="chart-card-header">
+        <h2>Strategic vs Territorial Impact</h2>
+        <ImpactScoresInfo />
+      </div>
       <p className="subtitle">Bubble size = cascade score, color = importance</p>
       <ResponsiveContainer width="100%" height={350}>
         <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>

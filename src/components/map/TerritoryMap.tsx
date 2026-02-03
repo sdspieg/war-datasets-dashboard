@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import { useDashboard } from '../../context/DashboardContext';
 import { loadTerritoryGeoJSON } from '../../data/loader';
@@ -21,12 +21,12 @@ export default function TerritoryMap({ dailyAreas, availableDates }: Props) {
   const [speed, setSpeed] = useState(1000); // ms per step
   const timerRef = useRef<number | null>(null);
 
-  // Filter available dates to current date range
-  const filteredDates = availableDates.filter((d) => {
+  // Filter available dates to current date range (memoized to prevent unnecessary re-renders)
+  const filteredDates = useMemo(() => {
     const startStr = state.dateRange[0].toISOString().substring(0, 10);
     const endStr = state.dateRange[1].toISOString().substring(0, 10);
-    return d >= startStr && d <= endStr;
-  });
+    return availableDates.filter((d) => d >= startStr && d <= endStr);
+  }, [availableDates, state.dateRange]);
 
   // Reset currentDate when it falls outside the filtered range
   useEffect(() => {

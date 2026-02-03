@@ -160,7 +160,7 @@ export function ImpactScoresInfo() {
         <li><strong>1</strong> - Minor front-line adjustment</li>
         <li><strong>0</strong> - No territorial change</li>
       </ul>
-      <h4>Cascade Score</h4>
+      <h4>Cascade Score (0-4)</h4>
       <p>
         Estimates the potential for follow-on effects - how likely this event is to trigger
         additional military actions, defensive responses, or changes in operational tempo.
@@ -168,10 +168,13 @@ export function ImpactScoresInfo() {
       </p>
       <h4>Why These Matter</h4>
       <p className="info-note">
-        <em>Events with high strategic but low territorial scores (top-left of scatter plot) represent
-        actions like deep strikes or infrastructure attacks. Events with high territorial but low strategic
-        scores (bottom-right) represent front-line advances without broader implications.
-        Events high in both are the most consequential.</em>
+        <em>
+          Events with high strategic but low territorial scores represent deep strikes or infrastructure attacks
+          that affect the broader war effort without significantly shifting the front line. Events with high
+          territorial but low strategic scores represent front-line advances that change local control but have
+          limited wider implications. Events that are high on both dimensions are the most consequential, combining
+          major territorial shifts with broader strategic impact.
+        </em>
       </p>
     </InfoModal>
   );
