@@ -140,6 +140,17 @@ html, body, #root {
   color: var(--text-primary);
 }
 
+.chart-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.chart-card-header h2 {
+  margin-bottom: 0;
+}
+
 .chart-card .subtitle {
   font-size: 12px;
   color: var(--text-secondary);
